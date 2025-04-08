@@ -10,7 +10,9 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -18,11 +20,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_requests")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserRequest {
+public class UserRequest extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +36,4 @@ public class UserRequest {
     @Column(name = "request_content", columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     private String requestContent;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
 }

@@ -32,7 +32,6 @@ public class SubmitRequestMapper {
         return UserRequest.builder()
                 .newMotorcycleRequest(true)
                 .requestContent(jsonRequestContent)
-                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -47,7 +46,6 @@ public class SubmitRequestMapper {
         return UserRequest.builder()
                 .newMotorcycleRequest(false)
                 .requestContent(jsonRequestContent)
-                .createdAt(LocalDateTime.now())
                 .build();
     }
 }
