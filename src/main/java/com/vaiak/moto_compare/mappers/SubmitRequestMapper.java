@@ -7,7 +7,6 @@ import com.vaiak.moto_compare.dto.motorcycle.SubmitMotorcycleRequestDTO;
 import com.vaiak.moto_compare.models.UserRequest;
 import jakarta.validation.Valid;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
