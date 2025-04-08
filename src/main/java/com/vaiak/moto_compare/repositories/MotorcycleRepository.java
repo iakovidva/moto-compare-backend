@@ -5,7 +5,6 @@ import com.vaiak.moto_compare.enums.Category;
 import com.vaiak.moto_compare.models.Motorcycle;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -25,6 +24,16 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
 
     @Query("SELECT new com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO(m.id, m.manufacturer, m.model, m.yearRange, m.image, m.category, m.displacement, m.horsePower) FROM Motorcycle m")
     Page<MotorcycleSummaryDTO> findAllMotorcyclesSummary(Pageable pageable);
+
+  @Query(
+      """
+    SELECT new com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO(m.id, m.manufacturer, m.model, m.yearRange, m.image, m.category, m.displacement, m.horsePower)
+    FROM Motorcycle m WHERE
+    LOWER(m.manufacturer) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+    LOWER(m.model) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+    LOWER(m.category) LIKE LOWER(CONCAT('%', :keyword, '%'))
+""")
+  List<MotorcycleSummaryDTO> searchMotorcycles(String keyword);
 
     @Query(value = "SELECT * FROM motorcycles m WHERE m.category = CAST(:category AS TEXT)  " +
             "AND ABS(m.displacement - :displacement) <= 350 " +
