@@ -1,5 +1,6 @@
 package com.vaiak.moto_compare.repositories;
 
+import com.vaiak.moto_compare.dto.manufacturer.PopularManufacturerDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
 import com.vaiak.moto_compare.enums.Category;
 import com.vaiak.moto_compare.models.Motorcycle;
@@ -33,7 +34,7 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
     LOWER(m.model) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
     LOWER(m.category) LIKE LOWER(CONCAT('%', :keyword, '%'))
 """)
-  List<MotorcycleSummaryDTO> searchMotorcycles(String keyword);
+  Page<MotorcycleSummaryDTO> searchMotorcycles(String keyword, Pageable pageable);
 
     @Query(value = "SELECT * FROM motorcycles m WHERE m.category = CAST(:category AS TEXT)  " +
             "AND ABS(m.displacement - :displacement) <= 350 " +
@@ -42,4 +43,15 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
     Set<Motorcycle> findSimilarMotorcycles(@Param("category") Category category,
                                            @Param("horsePower") int horsePower,
                                            @Param("displacement") int displacement);
+
+    @Query(value = """
+    SELECT new com.vaiak.moto_compare.dto.manufacturer.PopularManufacturerDTO(
+        m.manufacturer,
+        COUNT(*) as count
+    )
+    FROM Motorcycle m
+    GROUP BY m.manufacturer
+    ORDER BY COUNT(*) DESC
+""")
+  List<PopularManufacturerDTO> getPopularManufacturers();
 }
