@@ -1,14 +1,17 @@
 package com.vaiak.moto_compare.controllers;
 
+import com.vaiak.moto_compare.dto.manufacturer.PopularManufacturerDTO;
 import com.vaiak.moto_compare.dto.motorcycle.IncorrectSpecReportDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleDetailsDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
 import com.vaiak.moto_compare.dto.motorcycle.SubmitMotorcycleRequestDTO;
+import com.vaiak.moto_compare.enums.Category;
 import com.vaiak.moto_compare.mappers.MotorcycleMapper;
 import com.vaiak.moto_compare.mappers.SubmitRequestMapper;
 import com.vaiak.moto_compare.models.Motorcycle;
 import com.vaiak.moto_compare.models.UserRequest;
 import com.vaiak.moto_compare.services.MotorcycleService;
+import com.vaiak.moto_compare.services.PopularManufacturerService;
 import com.vaiak.moto_compare.services.UserRequestService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -35,27 +38,57 @@ public class MotorcycleController {
 
   private final MotorcycleService motorcycleService;
   private final UserRequestService userRequestService;
+  private final PopularManufacturerService popularManufacturerService;
 
   public MotorcycleController(MotorcycleService motorcycleService,
-                              UserRequestService userRequestService) {
+                              UserRequestService userRequestService,
+                              PopularManufacturerService popularManufacturerService) {
     this.motorcycleService = motorcycleService;
     this.userRequestService = userRequestService;
+    this.popularManufacturerService = popularManufacturerService;
   }
 
   @GetMapping
   public ResponseEntity<PagedModel<MotorcycleSummaryDTO>> getAllSummary(
           @RequestParam(defaultValue = "0") int page,
           @RequestParam(defaultValue = "3") int size,
-          @RequestParam(required = false) String manufacturer
+          @RequestParam(name = "category", required = false) Category category,
+          @RequestParam(name = "manufacturer", required = false) String manufacturer,
+          @RequestParam(name = "horsePowerMin", required = false) Integer horsePowerMin,
+          @RequestParam(name = "horsePowerMax", required = false) Integer horsePowerMax,
+          @RequestParam(name = "displacementMin", required = false) Integer displacementMin,
+          @RequestParam(name = "displacementMax", required = false) Integer displacementMax,
+          @RequestParam(name = "yearMin", required = false) Integer yearMin,
+          @RequestParam(name = "yearMax", required = false) Integer yearMax,
+          @RequestParam(name = "search", required = false) String search,
+          @RequestParam(name = "sort", required = false) String sort
   ) {
 
-    Page<MotorcycleSummaryDTO> allMotorcyclesSummary = motorcycleService.getAllMotorcyclesSummary(page, size, manufacturer);
+    Page<MotorcycleSummaryDTO> allMotorcyclesSummary;
+
+    if (search != null) {
+      allMotorcyclesSummary = motorcycleService.searchMotos(page, size, search);
+    } else {
+      allMotorcyclesSummary = motorcycleService.getAllMotorcyclesSummary(page,
+                    size,
+                    manufacturer,
+                    category,
+                    horsePowerMin,
+                    horsePowerMax,
+                    displacementMin,
+                    displacementMax,
+                    yearMin,
+                    yearMax,
+                    sort);
+    }
+
     PagedModel<MotorcycleSummaryDTO> pagedModel = new PagedModel<>(allMotorcyclesSummary);
     PagedModel.PageMetadata metadata = Objects.requireNonNull(pagedModel.getMetadata());
 
     return ResponseEntity.ok()
             .header("X-Total-Pages", String.valueOf(metadata.totalPages())) // Add metadata in headers
             .header("X-Total-Elements", String.valueOf(metadata.totalElements()))
+            .header("Access-Control-Expose-Headers", "X-Total-Pages, X-Total-Elements") // 👈 Add this
             .body(pagedModel);
   }
 
@@ -85,6 +118,7 @@ public class MotorcycleController {
   @PostMapping
   public MotorcycleDetailsDTO createMotorcycle(@Valid @RequestBody MotorcycleDetailsDTO motorcycle) {
     Motorcycle moto = motorcycleService.saveMotorcycle(motorcycle);
+    popularManufacturerService.evictPopularManufacturerCache();
     System.out.println("Moto saved: " + moto + " and similar are: " );
     moto.getSimilarMotorcycles().forEach(m -> System.out.println(m.getModel()));
     return motorcycle;
@@ -127,5 +161,10 @@ public class MotorcycleController {
   @GetMapping("/requests")
   public List<UserRequest> getAllRequests() {
     return userRequestService.getAllRequests();
+  }
+
+  @GetMapping("/popular-manufacturers")
+  public List<PopularManufacturerDTO> getPopularManufacturers() {
+    return popularManufacturerService.getPopularManufacturers();
   }
 }

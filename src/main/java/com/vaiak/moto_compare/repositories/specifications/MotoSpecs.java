@@ -16,11 +16,6 @@ public class MotoSpecs {
                 criteriaBuilder.equal(root.get("category"), category));
     }
 
-    public static Specification<Motorcycle> hasSearchQuery(String search) {
-        return ((root,query,criteriaBuilder) ->
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("model")), "%" + search.toLowerCase() + "%"));
-    }
-
     public static Specification<Motorcycle> hasHorsePowerMin(int horsePowerMin) {
         return ((root,query,criteriaBuilder) ->
                 criteriaBuilder.greaterThanOrEqualTo(root.get("horsePower"), horsePowerMin));
@@ -39,5 +34,15 @@ public class MotoSpecs {
     public static Specification<Motorcycle> hasDisplacementMax(int displacementMax) {
         return ((root,query,criteriaBuilder) ->
                 criteriaBuilder.lessThanOrEqualTo(root.get("displacement"), displacementMax));
+    }
+
+    public static Specification<Motorcycle> hasYearMin(int yearMin) {
+        return ((root,query,criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("yearRange"), yearMin));
+    }
+
+    public static Specification<Motorcycle> hasYearMax(int yearMax) {
+        return ((root,query,criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("yearRange"), yearMax));
     }
 }
