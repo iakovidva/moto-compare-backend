@@ -26,6 +26,7 @@ public class MotorcycleMapper {
                 .doubleValue();
 
         return MotorcycleDetailsDTO.builder()
+                .id(motorcycle.getId())
                 .manufacturer(motorcycle.getManufacturer())
                 .model(motorcycle.getModel())
                 .yearRange(motorcycle.getYearRange())

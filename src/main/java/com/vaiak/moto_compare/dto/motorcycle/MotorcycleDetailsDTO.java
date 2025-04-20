@@ -17,6 +17,9 @@ import java.util.Set;
 public class MotorcycleDetailsDTO {
 
     @NotNull
+    private Long id;
+
+    @NotNull
     private Manufacturer manufacturer;
 
     @NotBlank
