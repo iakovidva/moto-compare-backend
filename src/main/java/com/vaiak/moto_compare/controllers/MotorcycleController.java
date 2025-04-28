@@ -115,6 +115,14 @@ public class MotorcycleController {
     return motoDetails;
   }
 
+  @GetMapping("/{motorcycleId}/summary")
+  public MotorcycleSummaryDTO getMotorcycleSummary(@PathVariable Long motorcycleId) {
+    Motorcycle motorcycle = motorcycleService.getMotorcycleById(motorcycleId);
+    MotorcycleSummaryDTO motoSummary = MotorcycleMapper.toSummaryDTO(motorcycle);
+    System.out.println(motoSummary);
+    return motoSummary;
+  }
+
   @PostMapping
   public MotorcycleDetailsDTO createMotorcycle(@Valid @RequestBody MotorcycleDetailsDTO motorcycle) {
     Motorcycle moto = motorcycleService.saveMotorcycle(motorcycle);
