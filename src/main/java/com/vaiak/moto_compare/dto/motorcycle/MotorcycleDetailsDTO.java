@@ -16,7 +16,6 @@ import java.util.Set;
 @Builder
 public class MotorcycleDetailsDTO {
 
-    @NotNull
     private Long id;
 
     @NotNull
