@@ -31,7 +31,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public Review saveReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO) {
+    public ReviewResponseDTO saveReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO) {
         Review review = ReviewMapper.toEntity(reviewRequestDTO);
 
         Motorcycle motorcycle = motorcycleRepository.findById(motorcycleId).orElseThrow();
@@ -40,10 +40,12 @@ public class ReviewService {
         review.setMotorcycle(motorcycle);
         review.setUser(user);
         review.setCreatedAt(LocalDateTime.now());
-        return reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(review);
+        return ReviewMapper.toResponseDTO(savedReview);
     }
 
-    public List<Review> getMotorcycleReviews(Long motorcycleId) {
-        return reviewRepository.findAllByMotorcycleId(motorcycleId);
+    public List<ReviewResponseDTO> getMotorcycleReviews(Long motorcycleId) {
+        List<Review> reviews = reviewRepository.findAllByMotorcycleId(motorcycleId);
+        return reviews.stream().map(ReviewMapper::toResponseDTO).toList();
     }
 }

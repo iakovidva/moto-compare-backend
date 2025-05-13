@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,7 +22,8 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
 
     List<Motorcycle> findByManufacturer(String manufacturer);
 
-    Optional<Motorcycle> findById(Long motorcycleId);
+    @NonNull
+    Optional<Motorcycle> findById(@NonNull Long motorcycleId);
 
     @Query("SELECT new com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO(m.id, m.manufacturer, m.model, m.yearRange, m.image, m.category, m.displacement, m.horsePower) FROM Motorcycle m")
     Page<MotorcycleSummaryDTO> findAllMotorcyclesSummary(Pageable pageable);

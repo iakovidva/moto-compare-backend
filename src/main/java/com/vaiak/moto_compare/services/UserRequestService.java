@@ -1,5 +1,8 @@
 package com.vaiak.moto_compare.services;
 
+import com.vaiak.moto_compare.dto.motorcycle.IncorrectSpecReportDTO;
+import com.vaiak.moto_compare.dto.motorcycle.SubmitMotorcycleRequestDTO;
+import com.vaiak.moto_compare.mappers.SubmitRequestMapper;
 import com.vaiak.moto_compare.models.UserRequest;
 import com.vaiak.moto_compare.repositories.UserRequestRepository;
 import jakarta.transaction.Transactional;
@@ -17,6 +20,17 @@ public class UserRequestService {
     }
 
     @Transactional
+    public UserRequest createNewMotorcycleRequest(SubmitMotorcycleRequestDTO request) {
+        UserRequest userRequest = SubmitRequestMapper.toUserRequest(request);
+        return createRequest(userRequest);
+    }
+
+    @Transactional
+    public UserRequest createIncorrectValueRequest(IncorrectSpecReportDTO request) {
+        UserRequest userRequest = SubmitRequestMapper.toUserRequest(request);
+        return createRequest(userRequest);
+    }
+
     public UserRequest createRequest(UserRequest userRequest) {
         return repository.save(userRequest);
     }

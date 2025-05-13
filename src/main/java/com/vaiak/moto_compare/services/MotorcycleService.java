@@ -1,8 +1,9 @@
 package com.vaiak.moto_compare.services;
 
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleDetailsDTO;
+import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSearchParams;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
-import com.vaiak.moto_compare.enums.Category;
+import com.vaiak.moto_compare.exceptions.MotorcycleNotFoundException;
 import com.vaiak.moto_compare.mappers.MotorcycleMapper;
 import com.vaiak.moto_compare.models.Motorcycle;
 import com.vaiak.moto_compare.repositories.MotorcycleRepository;
@@ -21,36 +22,36 @@ import java.util.List;
 public class MotorcycleService {
 
   private final MotorcycleRepository repository;
+  private final PopularManufacturerService popularManufacturerService;
 
-  public MotorcycleService(MotorcycleRepository repository) {
+  public MotorcycleService(MotorcycleRepository repository,
+                           PopularManufacturerService popularManufacturerService) {
     this.repository = repository;
+    this.popularManufacturerService = popularManufacturerService;
   }
 
-  public Page<MotorcycleSummaryDTO> getAllMotorcyclesSummary(int page,
-                                                             int size,
-                                                             String manufacturer,
-                                                             Category category,
-                                                             Integer horsePowerMin,
-                                                             Integer horsePowerMax,
-                                                             Integer displacementMin,
-                                                             Integer displacementMax,
-                                                             Integer yearMin,
-                                                             Integer yearMax,
-                                                             String sort
-  ) {
-    Sort sortBy = parseSorting(sort);
+  public Page<MotorcycleSummaryDTO> getAllMotorcycles(MotorcycleSearchParams params) {
+    if (params.getSearch() != null) {
+      return searchMotos(params.getPage(), params.getSize(), params.getSearch());
+    } else {
+      return getFilteredMotorcycles(params);
+    }
+  }
 
-    Pageable pageable = PageRequest.of(page, size, sortBy);
+  public Page<MotorcycleSummaryDTO> getFilteredMotorcycles(MotorcycleSearchParams params) {
+    Sort sortBy = parseSorting(params.getSort());
+
+    Pageable pageable = PageRequest.of(params.getPage(), params.getSize(), sortBy);
     // Consider switching to manual Queries if that starts taking so long. (refactor with between?)
     Specification<Motorcycle> spec = Specification.where(
-            (manufacturer != null && !manufacturer.isEmpty()) ? MotoSpecs.hasManufacturer(manufacturer) : null)
-            .and((category != null ? MotoSpecs.isCategory(category) : null))
-            .and(horsePowerMin != null ? MotoSpecs.hasHorsePowerMin(horsePowerMin) : null)
-            .and(horsePowerMax != null ? MotoSpecs.hasHorsePowerMax(horsePowerMax) : null)
-            .and(displacementMin != null ? MotoSpecs.hasDisplacementMin(displacementMin) : null)
-            .and(displacementMax != null ? MotoSpecs.hasDisplacementMax(displacementMax) : null)
-            .and(yearMin != null ? MotoSpecs.hasYearMin(yearMin) : null)
-            .and(yearMax != null ? MotoSpecs.hasYearMax(yearMax) : null);
+            (params.getManufacturer() != null && !params.getManufacturer().isEmpty()) ? MotoSpecs.hasManufacturer(params.getManufacturer()) : null)
+            .and((params.getCategory() != null ? MotoSpecs.isCategory(params.getCategory()) : null))
+            .and(params.getHorsePowerMin() != null ? MotoSpecs.hasHorsePowerMin(params.getHorsePowerMin()) : null)
+            .and(params.getHorsePowerMax() != null ? MotoSpecs.hasHorsePowerMax(params.getHorsePowerMax()) : null)
+            .and(params.getDisplacementMin() != null ? MotoSpecs.hasDisplacementMin(params.getDisplacementMin()) : null)
+            .and(params.getDisplacementMax() != null ? MotoSpecs.hasDisplacementMax(params.getDisplacementMax()) : null)
+            .and(params.getYearMin() != null ? MotoSpecs.hasYearMin(params.getYearMin()) : null)
+            .and(params.getYearMax() != null ? MotoSpecs.hasYearMax(params.getYearMax()) : null);
     Page<Motorcycle> summaryMotorcycles = repository.findAll(spec, pageable);
 
     return summaryMotorcycles.map(MotorcycleMapper::toSummaryDTO);
@@ -69,24 +70,36 @@ public class MotorcycleService {
       case "displacement_asc" -> Sort.by("displacement").ascending();
       case "date_desc" -> Sort.by("yearRange").descending();
       case "date_asc" -> Sort.by("yearRange").ascending();
-      default -> Sort.unsorted(); // fallback
+      default -> Sort.unsorted();
     };
   }
 
   @Transactional
-  public Motorcycle saveMotorcycle(MotorcycleDetailsDTO motorcycleDTO) {
+  public void saveMotorcycle(MotorcycleDetailsDTO motorcycleDTO) {
     Motorcycle moto = MotorcycleMapper.toEntity(motorcycleDTO);
     moto.setSimilarMotorcycles(repository.findSimilarMotorcycles(moto.getCategory(), moto.getHorsePower(), moto.getDisplacement()));
     repository.save(moto);
-    return moto;
+    popularManufacturerService.evictPopularManufacturerCache();
   }
 
   public List<Motorcycle> getMotorcyclesByManufacturer(String manufacturer) {
-    return repository.findByManufacturer(manufacturer);
+    List<Motorcycle> byManufacturer = repository.findByManufacturer(manufacturer);
+    if (byManufacturer.isEmpty()) {
+      throw new MotorcycleNotFoundException(manufacturer);
+    }
+    return byManufacturer;
   }
 
-  public Motorcycle getMotorcycleById(Long motorcycleId) {
-    return repository.findById(motorcycleId).orElseThrow();
+  public MotorcycleDetailsDTO getMotorcycleDetailsById(Long motorcycleId) {
+    Motorcycle motorcycle = repository.findById(motorcycleId)
+            .orElseThrow(() -> new MotorcycleNotFoundException(motorcycleId));
+    return MotorcycleMapper.toDetailsDTO(motorcycle);
+  }
+
+  public MotorcycleSummaryDTO getMotorcycleSummaryById(Long motorcycleId) {
+    Motorcycle motorcycle = repository.findById(motorcycleId)
+            .orElseThrow(() -> new MotorcycleNotFoundException(motorcycleId));
+    return MotorcycleMapper.toSummaryDTO(motorcycle);
   }
 
   public Page<MotorcycleSummaryDTO> searchMotos(int page, int size, String keyword) {
