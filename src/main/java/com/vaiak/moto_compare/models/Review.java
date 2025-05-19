@@ -1,6 +1,6 @@
 package com.vaiak.moto_compare.models;
 
-import com.vaiak.moto_compare.security.User;
+import com.vaiak.moto_compare.security.models.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

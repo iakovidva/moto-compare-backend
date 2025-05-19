@@ -8,7 +8,7 @@ import com.vaiak.moto_compare.models.Review;
 import com.vaiak.moto_compare.repositories.MotorcycleRepository;
 import com.vaiak.moto_compare.repositories.ReviewRepository;
 import com.vaiak.moto_compare.repositories.UserRepository;
-import com.vaiak.moto_compare.security.User;
+import com.vaiak.moto_compare.security.models.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

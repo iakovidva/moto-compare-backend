@@ -1,6 +1,7 @@
-package com.vaiak.moto_compare.security;
+package com.vaiak.moto_compare.security.models;
 
 import com.vaiak.moto_compare.models.BaseEntity;
+import com.vaiak.moto_compare.security.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
