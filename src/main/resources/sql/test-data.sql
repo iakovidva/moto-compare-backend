@@ -281,11 +281,14 @@ INSERT INTO similar_motorcycles (motorcycle_id, similar_motorcycle_id) VALUES
     ON CONFLICT (motorcycle_id, similar_motorcycle_id) DO NOTHING;
 
 
+--securepassword123   ->  $2a$10$hqfdKPGTrN2rRsniOhsPB.kXEUHvk/I6PPAzfZrkufgmo3Et9NNLa
+--adminpass456        ->  $2a$10$d3inlVMCUtx9HELRIK/6..JzBTVFEJx/TfjkJeglF2BZNSIRzdyf6
+--mypassword789       ->  $2a$10$jsNv9cMJscL23yXJaxLF/OncVvjo/03EYBGBu..fkgzJrbW7UaDW6ads
 INSERT INTO users (id, user_name, email, password, role)
 VALUES
-    ('550e8400-e29b-41d4-a716-446655440000', 'john_doe', 'john.doe@example.com', 'securepassword123', 'USER'),
-    ('660f9511-f40c-42a1-b18d-550a9a660bfa', 'admin_user', 'admin@example.com', 'adminpass456', 'ADMIN'),
-    ('770c8302-c44d-49b3-b0d9-661b9b771acb', 'jane_doe', 'jane.doe@example.com', 'mypassword789', 'USER')
+    ('550e8400-e29b-41d4-a716-446655440000', 'john_doe', 'john.doe@example.com', '$2a$10$hqfdKPGTrN2rRsniOhsPB.kXEUHvk/I6PPAzfZrkufgmo3Et9NNLa', 'USER'),
+    ('660f9511-f40c-42a1-b18d-550a9a660bfa', 'admin_user', 'admin@example.com', '$2a$10$d3inlVMCUtx9HELRIK/6..JzBTVFEJx/TfjkJeglF2BZNSIRzdyf6', 'ADMIN'),
+    ('770c8302-c44d-49b3-b0d9-661b9b771acb', 'jane_doe', 'jane.doe@example.com', '$2a$10$jsNv9cMJscL23yXJaxLF/OncVvjo/03EYBGBu..fkgzJrbW7UaDW6', 'USER')
         ON CONFLICT (user_name, email) DO NOTHING;
 
 INSERT INTO reviews (motorcycle_id, user_id, rating, comment, created_at)
