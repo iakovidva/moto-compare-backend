@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.time.Duration;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +30,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    @Value("${jwt.access-token-duration-millis}")
+    private long accessTokenDurationMillis;
+    @Value("${jwt.refresh-token-duration-days}")
+    private long refreshTokenDurationDays;
+
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final BCryptPasswordEncoder passwordEncoder;
-
 
     public AuthController(UserRepository userRepository,
                           JwtTokenProvider jwtTokenProvider,
@@ -52,7 +58,7 @@ public class AuthController {
         if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
-        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), 2*60*1000);
+        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         addRefreshTokenCookie(response, refreshToken.getToken());
         return ResponseEntity.ok(new AuthResponse(accessToken));
@@ -83,7 +89,7 @@ public class AuthController {
         user.setRole(Role.USER);
         userRepository.save(user);
 
-        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), 2*60*1000);
+        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         addRefreshTokenCookie(response, refreshToken.getToken());
 
@@ -96,7 +102,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .path("/api/auth/refresh")
-                .maxAge(Duration.ofDays(30))
+                .maxAge(Duration.ofDays(refreshTokenDurationDays))
                 .sameSite("Strict")
                 .build();
         response.setHeader("Set-Cookie", cookie.toString());
@@ -110,7 +116,7 @@ public class AuthController {
         refreshTokenService.verifyExpiration(refreshToken);
 
         User user = refreshToken.getUser();
-        String newAccessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), 2 * 60 * 1000);
+        String newAccessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
 
         return ResponseEntity.ok(new AuthResponse(newAccessToken));
     }
