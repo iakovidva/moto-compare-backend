@@ -104,9 +104,4 @@ public class MotorcycleDetailsDTO {
     private String lighting;
 
     private Set<MotorcycleSummaryDTO> similarMotorcycles;
-
-    // Reviews
-    private List<ReviewResponseDTO> reviews;
-    private double averageRating;
-    private int numberOfReviews;
 }

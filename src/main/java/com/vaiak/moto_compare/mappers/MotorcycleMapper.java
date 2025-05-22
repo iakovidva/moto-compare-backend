@@ -19,12 +19,6 @@ public class MotorcycleMapper {
             return null;
         }
 
-        List<ReviewResponseDTO> reviews = motorcycle.getReviews().stream().map(ReviewMapper::toResponseDTO).toList();
-        double averageRating = reviews.stream().mapToInt(ReviewResponseDTO::getRating).average().orElse(0);
-        double roundedRating = BigDecimal.valueOf(averageRating)
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
-
         return MotorcycleDetailsDTO.builder()
                 .id(motorcycle.getId())
                 .manufacturer(motorcycle.getManufacturer())
@@ -78,9 +72,9 @@ public class MotorcycleMapper {
                 .cruiseControl(motorcycle.isCruiseControl())
                 .lighting(motorcycle.getLighting())
                 .similarMotorcycles(getSimilarMotorcycles(motorcycle))
-                .reviews(reviews)
-                .averageRating(roundedRating)
-                .numberOfReviews(reviews.size())
+//                .reviews(reviews)
+//                .averageRating(roundedRating)
+//                .numberOfReviews(reviews.size())
                 .build();
     }
 
