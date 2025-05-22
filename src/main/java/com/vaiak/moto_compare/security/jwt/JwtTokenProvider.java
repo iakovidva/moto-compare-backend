@@ -21,12 +21,12 @@ public class JwtTokenProvider {
         this.jwtSecret = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String subject, Role role, long expirationMillis) {
+    public String generateToken(String email, Role role, long expirationMillis) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMillis);
 
         return Jwts.builder()
-                .subject(subject)
+                .subject(email)
                 .claims(Map.of("role", role.name()))
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -34,7 +34,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
+    public String getEmailFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 

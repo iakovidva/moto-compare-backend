@@ -76,7 +76,7 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerRequest,
                                       HttpServletResponse response) {
         if (userRepository.findByEmail(registerRequest.getEmail()) != null) {
-           throw new RuntimeException("Email already exists");
+           throw new RuntimeException("Email already exists");  //TODO USE MORE DESCRIPTIVE EXCEPTION - Check ExceptionHandler
         }
         if (userRepository.findByUserName(registerRequest.getUsername()) != null) { //TODO CREATE AND USE USERSERVICE!
             throw new RuntimeException("Username already exists");

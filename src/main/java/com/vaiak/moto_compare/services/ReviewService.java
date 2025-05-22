@@ -31,11 +31,10 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReviewResponseDTO saveReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO) {
+    public ReviewResponseDTO saveReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO, User user) {
         Review review = ReviewMapper.toEntity(reviewRequestDTO);
 
         Motorcycle motorcycle = motorcycleRepository.findById(motorcycleId).orElseThrow();
-        User user = userRepository.findById(reviewRequestDTO.getUserId()).orElseThrow();
 
         review.setMotorcycle(motorcycle);
         review.setUser(user);

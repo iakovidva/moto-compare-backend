@@ -8,7 +8,6 @@ import java.util.UUID;
 @Data
 @Builder
 public class ReviewRequestDTO {
-    private UUID userId;
     private int rating;
     private String comment;
 }
