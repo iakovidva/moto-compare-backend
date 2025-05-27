@@ -78,7 +78,7 @@ public class AuthController {
         if (userService.findByEmail(registerRequest.getEmail()) != null) {
            throw new RuntimeException("Email already exists");  //TODO USE MORE DESCRIPTIVE EXCEPTION - Check ExceptionHandler
         }
-        if (userService.findByUserName(registerRequest.getUsername()) != null) { //TODO CREATE AND USE USERSERVICE!
+        if (userService.findByUserName(registerRequest.getUsername()) != null) {
             throw new RuntimeException("Username already exists");
         }
 
