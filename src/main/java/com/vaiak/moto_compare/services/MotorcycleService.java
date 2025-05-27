@@ -107,4 +107,7 @@ public class MotorcycleService {
     return repository.searchMotorcycles(keyword, pageable);
   }
 
+  public Motorcycle getMotorcycleById(Long motorcycleId) {
+    return repository.findById(motorcycleId).orElseThrow();
+  }
 }

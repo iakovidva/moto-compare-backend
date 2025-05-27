@@ -5,21 +5,29 @@ import com.vaiak.moto_compare.dto.motorcycle.MotorcycleDetailsDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSearchParams;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
 import com.vaiak.moto_compare.models.Motorcycle;
+import com.vaiak.moto_compare.models.UserFavorite;
+import com.vaiak.moto_compare.repositories.UserRepository;
+import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
+import com.vaiak.moto_compare.security.models.User;
 import com.vaiak.moto_compare.services.MotorcycleService;
 import com.vaiak.moto_compare.services.PopularManufacturerService;
+import com.vaiak.moto_compare.services.UserFavoriteService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,11 +37,14 @@ public class MotorcycleController {
 
   private final MotorcycleService motorcycleService;
   private final PopularManufacturerService popularManufacturerService;
+  private final UserFavoriteService userFavoriteService;
 
   public MotorcycleController(MotorcycleService motorcycleService,
-                              PopularManufacturerService popularManufacturerService) {
+                              PopularManufacturerService popularManufacturerService,
+                              UserFavoriteService userFavoriteService) {
     this.motorcycleService = motorcycleService;
     this.popularManufacturerService = popularManufacturerService;
+    this.userFavoriteService = userFavoriteService;
   }
 
   @GetMapping
@@ -78,7 +89,28 @@ public class MotorcycleController {
   }
 
   @GetMapping("/popular-manufacturers")
-  public List<PopularManufacturerDTO> getPopularManufacturers() {
-    return popularManufacturerService.getPopularManufacturers();
+  public ResponseEntity<List<PopularManufacturerDTO>> getPopularManufacturers() {
+    return ResponseEntity.ok(popularManufacturerService.getPopularManufacturers());
+  }
+
+  @GetMapping("/favorites")
+  @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
+  public ResponseEntity<List<MotorcycleSummaryDTO>> getFavoriteMotorcyclesByUser(@RequestHeader("Authorization") String authHeader) {
+    return ResponseEntity.ok(userFavoriteService.getFavoriteMotorcyclesByUser(authHeader));
+  }
+
+  @PostMapping("/{motorcycleId}/favorites")
+  @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
+  public ResponseEntity<UserFavorite> addMotorcycleToFavorites(@PathVariable Long motorcycleId,
+                                                               @RequestHeader("Authorization") String authHeader) {
+    return ResponseEntity.ok(userFavoriteService.saveFavoriteMotorcycle(motorcycleId, authHeader));
+  }
+
+  @DeleteMapping("/{motorcycleId}/favorites")
+  @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
+  public ResponseEntity<String> removeMotorcycleFromFavorites(@PathVariable Long motorcycleId,
+                                                               @RequestHeader("Authorization") String authHeader) {
+    userFavoriteService.removeFavoriteMotorcycle(motorcycleId, authHeader);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(motorcycleId + " removed from favorites");
   }
 }
