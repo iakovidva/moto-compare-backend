@@ -1,6 +1,5 @@
 package com.vaiak.moto_compare.security;
 
-import com.vaiak.moto_compare.repositories.UserRepository;
 import com.vaiak.moto_compare.security.dto.AuthResponse;
 import com.vaiak.moto_compare.security.dto.LoginRequest;
 import com.vaiak.moto_compare.security.dto.RegisterRequest;
@@ -8,6 +7,7 @@ import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
 import com.vaiak.moto_compare.security.models.RefreshToken;
 import com.vaiak.moto_compare.security.models.User;
 import com.vaiak.moto_compare.security.refreshToken.RefreshTokenService;
+import com.vaiak.moto_compare.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,16 +35,16 @@ public class AuthController {
     @Value("${jwt.refresh-token-duration-days}")
     private long refreshTokenDurationDays;
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public AuthController(UserRepository userRepository,
+    public AuthController(UserService userService,
                           JwtTokenProvider jwtTokenProvider,
                           RefreshTokenService refreshTokenService,
                           BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.refreshTokenService = refreshTokenService;
         this.passwordEncoder = passwordEncoder;
@@ -53,7 +53,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest,
                                    HttpServletResponse response) {
-        User user = userRepository.findByEmail(loginRequest.getEmail());
+        User user = userService.findByEmail(loginRequest.getEmail());
 
         if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
@@ -67,7 +67,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Transactional
     public ResponseEntity<?> logout(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName());
+        User user = userService.findByEmail(auth.getName());
         refreshTokenService.deleteByUser(user);
         return ResponseEntity.ok("Logged out successfully");
     }
@@ -75,10 +75,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerRequest,
                                       HttpServletResponse response) {
-        if (userRepository.findByEmail(registerRequest.getEmail()) != null) {
+        if (userService.findByEmail(registerRequest.getEmail()) != null) {
            throw new RuntimeException("Email already exists");  //TODO USE MORE DESCRIPTIVE EXCEPTION - Check ExceptionHandler
         }
-        if (userRepository.findByUserName(registerRequest.getUsername()) != null) { //TODO CREATE AND USE USERSERVICE!
+        if (userService.findByUserName(registerRequest.getUsername()) != null) { //TODO CREATE AND USE USERSERVICE!
             throw new RuntimeException("Username already exists");
         }
 
@@ -87,7 +87,7 @@ public class AuthController {
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole(Role.USER);
-        userRepository.save(user);
+        userService.saveUser(user);
 
         String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);

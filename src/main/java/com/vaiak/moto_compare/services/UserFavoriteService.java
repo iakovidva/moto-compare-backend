@@ -6,7 +6,6 @@ import com.vaiak.moto_compare.models.Motorcycle;
 import com.vaiak.moto_compare.models.UserFavorite;
 import com.vaiak.moto_compare.models.UserFavoriteId;
 import com.vaiak.moto_compare.repositories.UserFavoriteRepository;
-import com.vaiak.moto_compare.repositories.UserRepository;
 import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
 import com.vaiak.moto_compare.security.models.User;
 import jakarta.transaction.Transactional;
@@ -18,16 +17,16 @@ import java.util.List;
 public class UserFavoriteService {
 
     private final UserFavoriteRepository userFavoriteRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final MotorcycleService motorcycleService;
     private final JwtTokenProvider jwtTokenProvider;
 
     public UserFavoriteService(UserFavoriteRepository userFavoriteRepository,
-                               UserRepository userRepository,
+                               UserService userService,
                                MotorcycleService motorcycleService,
                                JwtTokenProvider jwtTokenProvider) {
         this.userFavoriteRepository = userFavoriteRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.motorcycleService = motorcycleService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
@@ -61,7 +60,7 @@ public class UserFavoriteService {
     private User getUserFromToken(String authHeader) {
         String token = extractToken(authHeader);
         String email = jwtTokenProvider.getEmailFromToken(token);
-        return userRepository.findByEmail(email);
+        return userService.findByEmail(email);
     }
 
     private String extractToken(String authHeader) {
