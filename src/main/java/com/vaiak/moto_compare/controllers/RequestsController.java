@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,16 +35,18 @@ public class RequestsController {
     }
 
     @PostMapping("/requests")
-    public ResponseEntity<String> submitMotorcycleRequest(@Valid @RequestBody SubmitMotorcycleRequestDTO motorcycleRequest) {
+    public ResponseEntity<String> submitMotorcycleRequest(@Valid @RequestBody SubmitMotorcycleRequestDTO motorcycleRequest,
+                                                          @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-        UserRequest request = userRequestService.createNewMotorcycleRequest(motorcycleRequest);
+        UserRequest request = userRequestService.createNewMotorcycleRequest(motorcycleRequest, authHeader);
         return ResponseEntity.status(HttpStatus.CREATED).body(request.getRequestContent());
     }
 
     @PostMapping("/{motorcycleId}/incorrectValue")
     public ResponseEntity<String> submitIncorrectValueReport(@PathVariable String motorcycleId,
-                                                             @RequestBody IncorrectSpecReportDTO requestContent) {
-        UserRequest request = userRequestService.createIncorrectValueRequest(requestContent);
+                                                             @RequestBody IncorrectSpecReportDTO requestContent,
+                                                             @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        UserRequest request = userRequestService.createIncorrectValueRequest(requestContent, authHeader);
         return ResponseEntity.status(HttpStatus.CREATED).body(request.getRequestContent());
     }
 }

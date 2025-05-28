@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ReviewService {
@@ -50,6 +51,11 @@ public class ReviewService {
 
     public List<ReviewResponseDTO> getMotorcycleReviews(Long motorcycleId) {
         List<Review> reviews = reviewRepository.findAllByMotorcycleId(motorcycleId);
+        return reviews.stream().map(ReviewMapper::toResponseDTO).toList();
+    }
+
+    public List<ReviewResponseDTO> getReviewsByUserId(UUID userId) {
+        List<Review> reviews = reviewRepository.findAllByUserId(userId);
         return reviews.stream().map(ReviewMapper::toResponseDTO).toList();
     }
 }

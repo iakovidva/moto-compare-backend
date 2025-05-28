@@ -1,10 +1,17 @@
 package com.vaiak.moto_compare.models;
 
+import com.vaiak.moto_compare.enums.Manufacturer;
+import com.vaiak.moto_compare.enums.Status;
+import com.vaiak.moto_compare.security.models.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,4 +39,12 @@ public class UserRequest extends BaseEntity {
     @Column(name = "request_content", columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     private String requestContent;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private Status status;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
+    private User user;
 }

@@ -2,12 +2,9 @@ package com.vaiak.moto_compare.controllers;
 
 import com.vaiak.moto_compare.dto.review.ReviewRequestDTO;
 import com.vaiak.moto_compare.dto.review.ReviewResponseDTO;
-import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
-import com.vaiak.moto_compare.security.models.User;
 import com.vaiak.moto_compare.services.ReviewService;
 import java.util.List;
 
-import com.vaiak.moto_compare.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

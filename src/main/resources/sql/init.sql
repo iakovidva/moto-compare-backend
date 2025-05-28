@@ -1,5 +1,6 @@
 DROP TYPE IF EXISTS motorcycle_manufacturer CASCADE;
 DROP TYPE IF EXISTS motorcycle_category CASCADE;
+DROP TYPE IF EXISTS request_status CASCADE;
 
 CREATE TYPE motorcycle_manufacturer AS ENUM (
     'HONDA', 'YAMAHA', 'KAWASAKI', 'SUZUKI', 'HARLEY_DAVIDSON',
@@ -17,6 +18,7 @@ CREATE TYPE motorcycle_category AS ENUM (
     'SCRAMBLER', 'SPORT_TOURING', 'MOTOCROSS', 'ELECTRIC', 'CUSTOM', 'SIDECAR'
 );
 
+CREATE TYPE request_status AS ENUM ('SUBMITTED', 'IN_PROGRESS', 'COMPLETED');
 
 CREATE TABLE IF NOT EXISTS motorcycles (
     id SERIAL PRIMARY KEY,
@@ -119,8 +121,11 @@ CREATE TABLE IF NOT EXISTS user_requests (
     id SERIAL PRIMARY KEY,
     new_motorcycle_request BOOLEAN NOT NULL,
     request_content jsonb,
+    user_id UUID,
+    status request_status NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_requests_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS user_favorites (
