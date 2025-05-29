@@ -7,9 +7,9 @@ import com.vaiak.moto_compare.models.Motorcycle;
 import com.vaiak.moto_compare.models.Review;
 import com.vaiak.moto_compare.repositories.MotorcycleRepository;
 import com.vaiak.moto_compare.repositories.ReviewRepository;
-import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
 import com.vaiak.moto_compare.security.models.User;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,23 +21,19 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final MotorcycleRepository motorcycleRepository;
-    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
 
     public ReviewService(ReviewRepository reviewRepository,
                          MotorcycleRepository motorcycleRepository,
-                         JwtTokenProvider jwtTokenProvider,
                          UserService userService) {
         this.reviewRepository = reviewRepository;
         this.motorcycleRepository = motorcycleRepository;
-        this.jwtTokenProvider = jwtTokenProvider;
         this.userService = userService;
     }
 
     @Transactional
-    public ReviewResponseDTO saveReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO, String authHeader) {
-        String email = jwtTokenProvider.getEmailFromToken(authHeader.substring(7));
-        User user = userService.findByEmail(email);
+    public ReviewResponseDTO saveReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO, Authentication auth) {
+        User user = userService.findByEmail(auth.getName());
 
         Review review = ReviewMapper.toEntity(reviewRequestDTO);
         Motorcycle motorcycle = motorcycleRepository.findById(motorcycleId).orElseThrow();
