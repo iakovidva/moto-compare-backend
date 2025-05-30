@@ -4,6 +4,7 @@ import com.vaiak.moto_compare.dto.motorcycle.IncorrectSpecReportDTO;
 import com.vaiak.moto_compare.dto.motorcycle.SubmitMotorcycleRequestDTO;
 import com.vaiak.moto_compare.models.UserRequest;
 import com.vaiak.moto_compare.services.UserRequestService;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class RequestsController {
 
     @PostMapping("/requests")
     public ResponseEntity<String> submitMotorcycleRequest(@Valid @RequestBody SubmitMotorcycleRequestDTO motorcycleRequest,
-                                                          Authentication auth) {
+                                                          @Nullable Authentication auth) {
         UserRequest request = userRequestService.createNewMotorcycleRequest(motorcycleRequest, auth);
         return ResponseEntity.status(HttpStatus.CREATED).body(request.getRequestContent());
     }
@@ -44,7 +45,7 @@ public class RequestsController {
     @PostMapping("/{motorcycleId}/incorrectValue")
     public ResponseEntity<String> submitIncorrectValueReport(@PathVariable String motorcycleId,
                                                              @RequestBody IncorrectSpecReportDTO requestContent,
-                                                             Authentication auth) {
+                                                             @Nullable Authentication auth) {
         UserRequest request = userRequestService.createIncorrectValueRequest(requestContent, auth);
         return ResponseEntity.status(HttpStatus.CREATED).body(request.getRequestContent());
     }

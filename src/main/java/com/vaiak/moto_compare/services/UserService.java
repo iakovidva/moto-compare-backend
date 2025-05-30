@@ -5,6 +5,8 @@ import com.vaiak.moto_compare.repositories.UserRepository;
 import com.vaiak.moto_compare.security.models.User;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -16,6 +18,10 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+    }
+
+    public Optional<User> findByEmailOptional(String email) {
+        return userRepository.findByEmail(email);
     }
 
     public User findByUserName(String username) {

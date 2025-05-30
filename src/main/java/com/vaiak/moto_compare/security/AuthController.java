@@ -14,16 +14,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -65,6 +69,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
     @Transactional
     public ResponseEntity<?> logout(Authentication auth) {
         User user = userService.findByEmail(auth.getName());
@@ -130,5 +135,21 @@ public class AuthController {
             }
         }
         throw new RuntimeException("No refresh token found in cookies");
+    }
+
+    @PutMapping("/reset-password")
+    @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
+    public ResponseEntity<String> resetPassword(@RequestParam String newPassword,
+                                                //TODO ask for old password.
+                                                Authentication auth) {
+        //TODO use verified email to reset the password, in case user forgets it.
+        String encrypted = passwordEncoder.encode(newPassword);
+        String email = auth.getName();
+        User user = userService.findByEmail(email);
+        user.setPassword(encrypted);
+        user.setUpdatedAt(LocalDateTime.now());
+        userService.saveUser(user);
+
+        return ResponseEntity.ok("Password has been reset");
     }
 }

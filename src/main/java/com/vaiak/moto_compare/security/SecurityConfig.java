@@ -2,6 +2,7 @@ package com.vaiak.moto_compare.security;
 
 import com.vaiak.moto_compare.security.jwt.JwtAuthenticationFilter;
 import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+  @Value("${frontend.origin}")
+  private String frontendOrigin;
 
   private final JwtTokenProvider jwtTokenProvider;
 
@@ -60,7 +64,7 @@ public class SecurityConfig {
   public UrlBasedCorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
-    config.addAllowedOrigin("http://localhost:3000");
+    config.addAllowedOrigin(frontendOrigin);
     config.addAllowedHeader("*");
     config.addAllowedMethod("*");
 

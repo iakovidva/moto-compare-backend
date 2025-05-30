@@ -6,6 +6,7 @@ import com.vaiak.moto_compare.mappers.SubmitRequestMapper;
 import com.vaiak.moto_compare.models.UserRequest;
 import com.vaiak.moto_compare.repositories.UserRequestRepository;
 import com.vaiak.moto_compare.security.models.User;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -26,15 +27,26 @@ public class UserRequestService {
     }
 
     @Transactional
-    public UserRequest createNewMotorcycleRequest(SubmitMotorcycleRequestDTO request, Authentication auth) {
-        User user = userService.findByEmail(auth.getName());
+    public UserRequest createNewMotorcycleRequest(SubmitMotorcycleRequestDTO request, @Nullable Authentication auth) {
+        User user;
+        if (auth != null) {
+            user = userService.findByEmailOptional(auth.getName()).orElse(null);
+        } else {
+            user = null;
+        }
+
         UserRequest userRequest = SubmitRequestMapper.toUserRequest(request, user);
         return createRequest(userRequest);
     }
 
     @Transactional
-    public UserRequest createIncorrectValueRequest(IncorrectSpecReportDTO request, Authentication auth) {
-        User user = userService.findByEmail(auth.getName());
+    public UserRequest createIncorrectValueRequest(IncorrectSpecReportDTO request, @Nullable Authentication auth) {
+        User user;
+        if (auth != null) {
+            user = userService.findByEmailOptional(auth.getName()).orElse(null);
+        } else {
+            user = null;
+        } //TODO consider using Optional.ofNullable()
         UserRequest userRequest = SubmitRequestMapper.toUserRequest(request, user);
         return createRequest(userRequest);
     }
