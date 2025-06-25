@@ -28,6 +28,10 @@ public class UserService {
         return userRepository.findByUserName(username).orElseThrow(UserNotFoundException::new);
     }
 
+    public Optional<User> findByUserNameOptional(String username) {
+        return userRepository.findByUserName(username);
+    }
+
     public void saveUser(User user) {
         userRepository.save(user);
     }

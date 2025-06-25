@@ -51,6 +51,17 @@ public class UserRequestService {
         return createRequest(userRequest);
     }
 
+    @Transactional
+    public UserRequest submitFeedbackRequest(String feedback, @Nullable Authentication auth) {
+        User user;
+        if (auth != null) {
+            user = userService.findByEmailOptional(auth.getName()).orElse(null);
+        } else {
+            user = null;
+        }
+        UserRequest userRequest = SubmitRequestMapper.feedbackToUserRequest(feedback, user);
+        return createRequest(userRequest);
+    }
 
     public UserRequest createRequest(UserRequest userRequest) {
         return repository.save(userRequest);

@@ -16,7 +16,6 @@ public class SubmitRequestMapper {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-
     public static UserRequest toUserRequest(@Valid SubmitMotorcycleRequestDTO motorcycleRequest, User user) {
         Map<String, String> requestContent = new HashMap<>();
         requestContent.put("manufacturer", motorcycleRequest.getManufacturer().toString());
@@ -42,6 +41,22 @@ public class SubmitRequestMapper {
         String jsonRequestContent;
         try {
             jsonRequestContent = objectMapper.writeValueAsString(requestContent);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting request content to JSON", e);
+        }
+
+        return UserRequest.builder()
+                .newMotorcycleRequest(false)
+                .requestContent(jsonRequestContent)
+                .status(Status.SUBMITTED)
+                .user(user)
+                .build();
+    }
+
+    public static UserRequest feedbackToUserRequest(String feedback, User user) {
+        String jsonRequestContent;
+        try {
+            jsonRequestContent = objectMapper.writeValueAsString(feedback);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error converting request content to JSON", e);
         }

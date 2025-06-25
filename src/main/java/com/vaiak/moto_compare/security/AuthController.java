@@ -80,10 +80,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerRequest,
                                       HttpServletResponse response) {
-        if (userService.findByEmail(registerRequest.getEmail()) != null) {
+        if (userService.findByEmailOptional(registerRequest.getEmail()).isPresent()) {
            throw new RuntimeException("Email already exists");  //TODO USE MORE DESCRIPTIVE EXCEPTION - Check ExceptionHandler
         }
-        if (userService.findByUserName(registerRequest.getUsername()) != null) {
+        if (userService.findByUserNameOptional(registerRequest.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
 

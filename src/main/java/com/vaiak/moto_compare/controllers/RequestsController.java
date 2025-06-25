@@ -49,4 +49,11 @@ public class RequestsController {
         UserRequest request = userRequestService.createIncorrectValueRequest(requestContent, auth);
         return ResponseEntity.status(HttpStatus.CREATED).body(request.getRequestContent());
     }
+
+    @PostMapping("/feedback")
+    public ResponseEntity<String> submitFeedbackRequest(@RequestBody String feedbackRequest,
+                                                          @Nullable Authentication auth) {
+        UserRequest request = userRequestService.submitFeedbackRequest(feedbackRequest, auth);
+        return ResponseEntity.status(HttpStatus.CREATED).body(request.getRequestContent());
+    }
 }
