@@ -1,5 +1,6 @@
 package com.vaiak.moto_compare.security;
 
+import com.vaiak.moto_compare.exceptions.UserNotFoundException;
 import com.vaiak.moto_compare.security.dto.AuthResponse;
 import com.vaiak.moto_compare.security.dto.LoginRequest;
 import com.vaiak.moto_compare.security.dto.RegisterRequest;
@@ -57,15 +58,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest,
                                    HttpServletResponse response) {
-        User user = userService.findByEmail(loginRequest.getEmail());
+        try {
+            User user = userService.findByEmail(loginRequest.getEmail());
 
-        if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            }
+
+            String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+            addRefreshTokenCookie(response, refreshToken.getToken());
+            return ResponseEntity.ok(new AuthResponse(accessToken));
+        } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
-        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
-        addRefreshTokenCookie(response, refreshToken.getToken());
-        return ResponseEntity.ok(new AuthResponse(accessToken));
     }
 
     @PostMapping("/logout")
