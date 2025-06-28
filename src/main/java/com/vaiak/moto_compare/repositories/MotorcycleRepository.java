@@ -54,6 +54,7 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
     FROM Motorcycle m
     GROUP BY m.manufacturer
     ORDER BY COUNT(*) DESC
+    LIMIT 10
 """)
   List<PopularManufacturerDTO> getPopularManufacturers();
 }
