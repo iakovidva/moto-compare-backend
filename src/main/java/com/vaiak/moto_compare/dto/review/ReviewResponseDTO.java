@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class ReviewResponseDTO {
     private String userName;
     private Long motorcycleId;
+    private String motorcycleName;
     private int rating;
     private String comment;
     private LocalDateTime createdAt;

@@ -2,6 +2,7 @@ package com.vaiak.moto_compare.mappers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaiak.moto_compare.dto.SubmitFeedbackRequestDTO;
 import com.vaiak.moto_compare.dto.motorcycle.IncorrectSpecReportDTO;
 import com.vaiak.moto_compare.dto.motorcycle.SubmitMotorcycleRequestDTO;
 import com.vaiak.moto_compare.enums.Status;
@@ -53,7 +54,7 @@ public class SubmitRequestMapper {
                 .build();
     }
 
-    public static UserRequest feedbackToUserRequest(String feedback, User user) {
+    public static UserRequest feedbackToUserRequest(SubmitFeedbackRequestDTO feedback, User user) {
         String jsonRequestContent;
         try {
             jsonRequestContent = objectMapper.writeValueAsString(feedback);

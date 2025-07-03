@@ -1,5 +1,6 @@
 package com.vaiak.moto_compare.services;
 
+import com.vaiak.moto_compare.dto.SubmitFeedbackRequestDTO;
 import com.vaiak.moto_compare.dto.motorcycle.IncorrectSpecReportDTO;
 import com.vaiak.moto_compare.dto.motorcycle.SubmitMotorcycleRequestDTO;
 import com.vaiak.moto_compare.mappers.SubmitRequestMapper;
@@ -52,7 +53,7 @@ public class UserRequestService {
     }
 
     @Transactional
-    public UserRequest submitFeedbackRequest(String feedback, @Nullable Authentication auth) {
+    public UserRequest submitFeedbackRequest(SubmitFeedbackRequestDTO feedback, @Nullable Authentication auth) {
         User user;
         if (auth != null) {
             user = userService.findByEmailOptional(auth.getName()).orElse(null);

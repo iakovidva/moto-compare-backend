@@ -1,5 +1,6 @@
 package com.vaiak.moto_compare.controllers;
 
+import com.vaiak.moto_compare.dto.SubmitFeedbackRequestDTO;
 import com.vaiak.moto_compare.dto.motorcycle.IncorrectSpecReportDTO;
 import com.vaiak.moto_compare.dto.motorcycle.SubmitMotorcycleRequestDTO;
 import com.vaiak.moto_compare.models.UserRequest;
@@ -51,7 +52,7 @@ public class RequestsController {
     }
 
     @PostMapping("/feedback")
-    public ResponseEntity<String> submitFeedbackRequest(@RequestBody String feedbackRequest,
+    public ResponseEntity<String> submitFeedbackRequest(@RequestBody SubmitFeedbackRequestDTO feedbackRequest,
                                                           @Nullable Authentication auth) {
         UserRequest request = userRequestService.submitFeedbackRequest(feedbackRequest, auth);
         return ResponseEntity.status(HttpStatus.CREATED).body(request.getRequestContent());
