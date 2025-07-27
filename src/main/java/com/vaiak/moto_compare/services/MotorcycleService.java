@@ -1,13 +1,16 @@
 package com.vaiak.moto_compare.services;
 
+import com.vaiak.moto_compare.dto.QuizAnswersDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleDetailsDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSearchParams;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
+import com.vaiak.moto_compare.dto.motorcycle.RankedMotorcycleDTO;
 import com.vaiak.moto_compare.exceptions.MotorcycleNotFoundException;
 import com.vaiak.moto_compare.mappers.MotorcycleMapper;
 import com.vaiak.moto_compare.models.Motorcycle;
 import com.vaiak.moto_compare.repositories.MotorcycleRepository;
 import com.vaiak.moto_compare.repositories.specifications.MotoSpecs;
+import com.vaiak.moto_compare.services.quiz.ScoringService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,18 +19,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class MotorcycleService {
 
   private final MotorcycleRepository repository;
-  private final PopularManufacturerService popularManufacturerService;
+  private final ScoringService scoringService;
+  private final StatisticsService statisticsService;
 
   public MotorcycleService(MotorcycleRepository repository,
-                           PopularManufacturerService popularManufacturerService) {
+                           ScoringService scoringService,
+                           StatisticsService statisticsService) {
     this.repository = repository;
-    this.popularManufacturerService = popularManufacturerService;
+    this.scoringService = scoringService;
+    this.statisticsService = statisticsService;
   }
 
   public Page<MotorcycleSummaryDTO> getAllMotorcycles(MotorcycleSearchParams params) {
@@ -79,7 +86,8 @@ public class MotorcycleService {
     Motorcycle moto = MotorcycleMapper.toEntity(motorcycleDTO);
     moto.setSimilarMotorcycles(repository.findSimilarMotorcycles(moto.getCategory(), moto.getHorsePower(), moto.getDisplacement()));
     repository.save(moto);
-    popularManufacturerService.evictPopularManufacturerCache();
+    statisticsService.updateStatistics(moto);
+    statisticsService.evictStatisticsCache();
   }
 
   public List<Motorcycle> getMotorcyclesByManufacturer(String manufacturer) {
@@ -110,4 +118,22 @@ public class MotorcycleService {
   public Motorcycle getMotorcycleById(Long motorcycleId) {
     return repository.findById(motorcycleId).orElseThrow();
   }
+
+  public List<RankedMotorcycleDTO> getMotorcyclesBasedOnQuizAnswers(QuizAnswersDTO quizAnswersDTO) {
+    Specification<Motorcycle> spec = MotoSpecs.fromQuizAnswers(quizAnswersDTO);
+    List<Motorcycle> motorcycles = repository.findAll(spec);
+
+    return motorcycles.stream()
+            .map(motorcycle -> rankMotorcycle(motorcycle, quizAnswersDTO))
+            .sorted(Comparator.comparingDouble(RankedMotorcycleDTO::getScore).reversed()) // high score first
+            .toList();
+  }
+
+  private RankedMotorcycleDTO rankMotorcycle(Motorcycle motorcycle, QuizAnswersDTO quizAnswersDTO) {
+    double score = scoringService.calculateTotalScore(motorcycle, quizAnswersDTO);
+
+    MotorcycleSummaryDTO base = MotorcycleMapper.toSummaryDTO(motorcycle);
+    return RankedMotorcycleDTO.of(base, motorcycle.getWeight(), motorcycle.getFuelConsumption(), score);
+  }
+
 }

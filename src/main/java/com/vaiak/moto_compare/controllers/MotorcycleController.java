@@ -1,13 +1,13 @@
 package com.vaiak.moto_compare.controllers;
 
-import com.vaiak.moto_compare.dto.manufacturer.PopularManufacturerDTO;
+import com.vaiak.moto_compare.dto.QuizAnswersDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleDetailsDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSearchParams;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
+import com.vaiak.moto_compare.dto.motorcycle.RankedMotorcycleDTO;
 import com.vaiak.moto_compare.models.Motorcycle;
 import com.vaiak.moto_compare.models.UserFavorite;
 import com.vaiak.moto_compare.services.MotorcycleService;
-import com.vaiak.moto_compare.services.PopularManufacturerService;
 import com.vaiak.moto_compare.services.UserFavoriteService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -33,14 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class MotorcycleController {
 
   private final MotorcycleService motorcycleService;
-  private final PopularManufacturerService popularManufacturerService;
   private final UserFavoriteService userFavoriteService;
 
   public MotorcycleController(MotorcycleService motorcycleService,
-                              PopularManufacturerService popularManufacturerService,
                               UserFavoriteService userFavoriteService) {
     this.motorcycleService = motorcycleService;
-    this.popularManufacturerService = popularManufacturerService;
     this.userFavoriteService = userFavoriteService;
   }
 
@@ -85,11 +82,6 @@ public class MotorcycleController {
     return ResponseEntity.ok(motorcyclesByManufacturer);
   }
 
-  @GetMapping("/popular-manufacturers")
-  public ResponseEntity<List<PopularManufacturerDTO>> getPopularManufacturers() {
-    return ResponseEntity.ok(popularManufacturerService.getPopularManufacturers());
-  }
-
   @GetMapping("/favorites")
   @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
   public ResponseEntity<List<MotorcycleSummaryDTO>> getFavoriteMotorcyclesByUser(Authentication auth) {
@@ -109,5 +101,11 @@ public class MotorcycleController {
                                                               Authentication auth) {
     userFavoriteService.removeFavoriteMotorcycle(motorcycleId, auth);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).body(motorcycleId + " removed from favorites");
+  }
+
+  @PostMapping("/quiz")
+  public ResponseEntity<List<RankedMotorcycleDTO>> getQuizMotorcyclesResult(@RequestBody QuizAnswersDTO quizAnswersDTO) {
+    List<RankedMotorcycleDTO> result = motorcycleService.getMotorcyclesBasedOnQuizAnswers(quizAnswersDTO);
+    return ResponseEntity.ok(result.subList(0, Math.min(result.size(), 5)));
   }
 }
