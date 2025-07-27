@@ -296,3 +296,24 @@ VALUES
     (1, '550e8400-e29b-41d4-a716-446655440000', 5, 'Amazing ride, very smooth and powerful!', '2025-03-15 10:00:00'),
     (2, '660f9511-f40c-42a1-b18d-550a9a660bfa', 4, 'Great bike, but a bit heavy.', '2025-03-14 12:30:00')
     ON CONFLICT (motorcycle_id, user_id, created_at) DO NOTHING;
+
+INSERT INTO category_statistics (category, counter, created_at, updated_at) VALUES
+    ('ADVENTURE', 13, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('SCRAMBLER', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('SPORT_TOURING', 2, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('NAKED', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00')
+ON CONFLICT (category) DO UPDATE SET counter = EXCLUDED.counter, updated_at = EXCLUDED.updated_at;
+
+INSERT INTO manufacturer_statistics (manufacturer, counter, created_at, updated_at) VALUES
+    ('HONDA', 3, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('YAMAHA', 3, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('DUCATI', 2, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('KTM', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('KOVE', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('CFMOTO', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('SUZUKI', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('VOGE', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('BMW', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('TRIUMPH', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00'),
+    ('APRILIA', 1, '2025-07-01 10:00:00', '2025-07-01 10:00:00')
+ON CONFLICT (manufacturer) DO UPDATE SET counter = EXCLUDED.counter, updated_at = EXCLUDED.updated_at;

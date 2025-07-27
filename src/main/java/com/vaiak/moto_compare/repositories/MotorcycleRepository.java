@@ -1,6 +1,5 @@
 package com.vaiak.moto_compare.repositories;
 
-import com.vaiak.moto_compare.dto.manufacturer.PopularManufacturerDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
 import com.vaiak.moto_compare.enums.Category;
 import com.vaiak.moto_compare.models.Motorcycle;
@@ -46,15 +45,4 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
                                            @Param("horsePower") int horsePower,
                                            @Param("displacement") int displacement);
 
-    @Query(value = """
-    SELECT new com.vaiak.moto_compare.dto.manufacturer.PopularManufacturerDTO(
-        m.manufacturer,
-        COUNT(*) as count
-    )
-    FROM Motorcycle m
-    GROUP BY m.manufacturer
-    ORDER BY COUNT(*) DESC
-    LIMIT 10
-""")
-  List<PopularManufacturerDTO> getPopularManufacturers();
 }

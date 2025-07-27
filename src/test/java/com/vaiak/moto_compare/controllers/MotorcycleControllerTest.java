@@ -14,8 +14,9 @@ import com.vaiak.moto_compare.enums.Category;
 import com.vaiak.moto_compare.enums.Manufacturer;
 import com.vaiak.moto_compare.exceptions.MotorcycleNotFoundException;
 import com.vaiak.moto_compare.services.MotorcycleService;
-import com.vaiak.moto_compare.services.PopularManufacturerService;
 import java.util.List;
+
+import com.vaiak.moto_compare.services.UserFavoriteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,7 +33,7 @@ class MotorcycleControllerTest {
     @Autowired private MockMvc mockMvc;
 
     @MockBean private MotorcycleService motorcycleService;
-    @MockBean private PopularManufacturerService popularManufacturerService;
+    @MockBean private UserFavoriteService userFavoriteService;
 
     @Test
     void getAllTest() throws Exception {

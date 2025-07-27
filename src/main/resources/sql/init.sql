@@ -130,9 +130,25 @@ CREATE TABLE IF NOT EXISTS user_requests (
 
 CREATE TABLE IF NOT EXISTS user_favorites (
     user_id UUID NOT NULL,
-    motorcycle_id SERIAL NOT NULL,
+    motorcycle_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_user_motorcycle UNIQUE (user_id, motorcycle_id),
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_motorcycle FOREIGN KEY (motorcycle_id) REFERENCES motorcycles(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS category_statistics (
+    id SERIAL PRIMARY KEY,
+    category motorcycle_category NOT NULL UNIQUE,
+    counter INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS manufacturer_statistics (
+    id SERIAL PRIMARY KEY,
+    manufacturer motorcycle_manufacturer NOT NULL UNIQUE,
+    counter INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
