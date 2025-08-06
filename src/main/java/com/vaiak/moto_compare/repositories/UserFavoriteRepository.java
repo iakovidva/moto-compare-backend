@@ -21,4 +21,12 @@ public interface UserFavoriteRepository extends JpaRepository<UserFavorite, User
     void deleteFavoriteMotorcycleForUser(@Param("userId") UUID userId,
                                          @Param("motorcycleId") Long motorcycleId);
 
+    @Query("""
+    SELECT uf.motorcycle.id, COUNT(uf.motorcycle.id)
+    FROM UserFavorite uf
+    GROUP BY uf.motorcycle.id
+    ORDER BY COUNT(uf.motorcycle.id) DESC
+    """)
+    List<Object[]> getMotorcycleFavoriteCounts();
+
 }

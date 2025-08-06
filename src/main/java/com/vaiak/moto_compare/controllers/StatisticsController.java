@@ -1,5 +1,6 @@
 package com.vaiak.moto_compare.controllers;
 
+import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
 import com.vaiak.moto_compare.dto.statistics.CategoryStatisticsDTO;
 import com.vaiak.moto_compare.dto.statistics.ManufacturerStatisticsDTO;
 import com.vaiak.moto_compare.services.StatisticsService;
@@ -30,4 +31,8 @@ public class StatisticsController {
         return ResponseEntity.ok(statisticsService.getAllManufacturerStatistics());
     }
 
+    @GetMapping("/popular")
+    public ResponseEntity<List<MotorcycleSummaryDTO>> getPopularMotorcycles() {
+        return ResponseEntity.ok(statisticsService.getPopularMotorcycles());
+    }
 }
