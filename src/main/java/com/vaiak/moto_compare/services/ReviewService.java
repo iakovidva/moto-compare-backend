@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,6 +36,10 @@ public class ReviewService {
     public ReviewResponseDTO saveReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO, Authentication auth) {
         User user = userService.findByEmail(auth.getName());
 
+        Optional<Review> existingReview = reviewRepository.findByMotorcycleIdAndUserId(motorcycleId, user.getId());
+        if (existingReview.isPresent()) {
+            throw new IllegalArgumentException("One review is allowed per user");
+        }
         Review review = ReviewMapper.toEntity(reviewRequestDTO);
         Motorcycle motorcycle = motorcycleRepository.findById(motorcycleId).orElseThrow();
 
@@ -43,6 +48,26 @@ public class ReviewService {
         review.setCreatedAt(LocalDateTime.now());
         Review savedReview = reviewRepository.save(review);
         return ReviewMapper.toResponseDTO(savedReview);
+    }
+
+    @Transactional
+    public ReviewResponseDTO updateReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO, Authentication auth) {
+        User user = userService.findByEmail(auth.getName());
+        Review review = reviewRepository.findByMotorcycleIdAndUserId(motorcycleId, user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("There is no review for this user and motorcycle"));
+
+        review.setRating(reviewRequestDTO.getRating());
+        review.setComment(reviewRequestDTO.getComment());
+
+        return ReviewMapper.toResponseDTO(reviewRepository.save(review));
+    }
+
+    @Transactional
+    public void deleteReview(Long motorcycleId, Authentication auth) {
+        User user = userService.findByEmail(auth.getName());
+        Review review = reviewRepository.findByMotorcycleIdAndUserId(motorcycleId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Review not found for this motorcycle and user"));
+        reviewRepository.delete(review);
     }
 
     public List<ReviewResponseDTO> getMotorcycleReviews(Long motorcycleId) {
