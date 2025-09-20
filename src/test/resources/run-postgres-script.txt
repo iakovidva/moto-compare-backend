@@ -1,0 +1,1 @@
+docker run --name moto-compare-postgres -e POSTGRES_DB=motorcycles_db -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres:15

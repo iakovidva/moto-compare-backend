@@ -1,13 +1,16 @@
 package com.vaiak.moto_compare.security;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.vaiak.moto_compare.exceptions.UserNotFoundException;
 import com.vaiak.moto_compare.security.dto.AuthResponse;
+import com.vaiak.moto_compare.security.dto.GoogleLoginRequest;
 import com.vaiak.moto_compare.security.dto.LoginRequest;
 import com.vaiak.moto_compare.security.dto.RegisterRequest;
 import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
 import com.vaiak.moto_compare.security.models.RefreshToken;
 import com.vaiak.moto_compare.security.models.User;
 import com.vaiak.moto_compare.security.refreshToken.RefreshTokenService;
+import com.vaiak.moto_compare.security.services.GoogleOAuthService;
 import com.vaiak.moto_compare.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,15 +47,18 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final GoogleOAuthService googleOAuthService;
 
     public AuthController(UserService userService,
                           JwtTokenProvider jwtTokenProvider,
                           RefreshTokenService refreshTokenService,
-                          BCryptPasswordEncoder passwordEncoder) {
+                          BCryptPasswordEncoder passwordEncoder,
+                          GoogleOAuthService googleOAuthService) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.refreshTokenService = refreshTokenService;
         this.passwordEncoder = passwordEncoder;
+        this.googleOAuthService = googleOAuthService;
     }
 
     @PostMapping("/login")
@@ -61,7 +67,13 @@ public class AuthController {
         try {
             User user = userService.findByEmail(loginRequest.getEmail());
 
-            if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            // Check if this is a Google user trying to login with email/password
+            if (user.getIsGoogleUser() != null && user.getIsGoogleUser()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("This account is linked to Google. Please use Google Sign-In.");
+            }
+
+            if (user == null || user.getPassword() == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
             }
 
@@ -87,7 +99,7 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerRequest,
                                       HttpServletResponse response) {
         if (userService.findByEmailOptional(registerRequest.getEmail()).isPresent()) {
-           throw new RuntimeException("Email already exists");  //TODO USE MORE DESCRIPTIVE EXCEPTION - Check ExceptionHandler
+           throw new RuntimeException("Email already exists");
         }
         if (userService.findByUserNameOptional(registerRequest.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
@@ -157,5 +169,46 @@ public class AuthController {
         userService.saveUser(user);
 
         return ResponseEntity.ok("Password has been reset");
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@RequestBody @Valid GoogleLoginRequest googleLoginRequest,
+                                         HttpServletResponse response) {
+        try {
+            // Verify the Google ID token
+            GoogleIdToken.Payload payload = googleOAuthService.verifyToken(googleLoginRequest.getIdToken());
+
+            String email = googleOAuthService.extractEmail(payload);
+            String googleId = payload.getSubject(); // Google user ID
+            String name = googleOAuthService.extractName(payload);
+            String profilePictureUrl = googleOAuthService.extractPicture(payload);
+
+            // Check if user already exists by email or Google ID
+            User user = userService.findByEmailOptional(email)
+                    .orElse(userService.findByGoogleId(googleId).orElse(null));
+
+            if (user == null) {
+                // Create new Google user
+                user = userService.createGoogleUser(email, googleId, name, profilePictureUrl);
+            } else if (!user.getIsGoogleUser()) {
+                // Existing email user trying to login with Google
+                // Link the Google account to existing user
+                user.setGoogleId(googleId);
+                user.setIsGoogleUser(true);
+                user.setProfilePictureUrl(profilePictureUrl);
+                userService.saveUser(user);
+            }
+
+            // Generate tokens and return response
+            String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+            addRefreshTokenCookie(response, refreshToken.getToken());
+
+            return ResponseEntity.ok(new AuthResponse(accessToken));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Google authentication failed: " + e.getMessage());
+        }
     }
 }

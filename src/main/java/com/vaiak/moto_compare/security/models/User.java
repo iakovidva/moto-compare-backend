@@ -33,10 +33,19 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     private String password;
 
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Column(name = "google_id")
+    private String googleId;
+
+    @Column(name = "is_google_user")
+    private Boolean isGoogleUser = false;
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
 }

@@ -97,8 +97,11 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_name VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255), -- Made nullable for Google users
     role VARCHAR(50) NOT NULL,
+    google_id VARCHAR(255),
+    is_google_user BOOLEAN DEFAULT FALSE,
+    profile_picture_url TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_user UNIQUE (user_name, email)
