@@ -2,10 +2,7 @@ package com.vaiak.moto_compare.security;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.vaiak.moto_compare.exceptions.UserNotFoundException;
-import com.vaiak.moto_compare.security.dto.AuthResponse;
-import com.vaiak.moto_compare.security.dto.GoogleLoginRequest;
-import com.vaiak.moto_compare.security.dto.LoginRequest;
-import com.vaiak.moto_compare.security.dto.RegisterRequest;
+import com.vaiak.moto_compare.security.dto.*;
 import com.vaiak.moto_compare.security.jwt.JwtTokenProvider;
 import com.vaiak.moto_compare.security.models.RefreshToken;
 import com.vaiak.moto_compare.security.models.User;
@@ -169,6 +166,43 @@ public class AuthController {
         userService.saveUser(user);
 
         return ResponseEntity.ok("Password has been reset");
+    }
+
+    @PutMapping("/change-username")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<String> changeUsername(@RequestParam String username,
+                                                 Authentication auth) {
+        if (userService.findByUserNameOptional(username).isPresent()) {
+            throw new IllegalArgumentException("Username is not available");
+        }
+
+        try {
+            String email = auth.getName();
+            User user = userService.findByEmail(email);
+            user.setUserName(username);
+            userService.saveUser(user);
+            return ResponseEntity.ok("Username has been updated");
+        } catch (Exception e) {
+            throw new InternalError(e);
+        }
+    }
+
+    @PutMapping("/change-password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
+                                                 Authentication auth) {
+        try {
+            String email = auth.getName();
+            User user = userService.findByEmail(email);
+            if (user == null || user.getPassword() == null || !passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("Old password is not correct");
+            }
+            user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+            userService.saveUser(user);
+            return ResponseEntity.ok("Password has been updated");
+        } catch (Exception e) {
+            throw new InternalError(e);
+        }
     }
 
     @PostMapping("/google")

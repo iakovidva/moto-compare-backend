@@ -37,12 +37,13 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
 """)
   Page<MotorcycleSummaryDTO> searchMotorcycles(String keyword, Pageable pageable);
 
-    @Query(value = "SELECT * FROM motorcycles m WHERE m.category = CAST(:category AS TEXT)  " +
-            "AND ABS(m.displacement - :displacement) <= 350 " +
-            "AND ABS(m.horse_power - :horsePower) <= 40 " +
-            "LIMIT 5", nativeQuery = true)
-    Set<Motorcycle> findSimilarMotorcycles(@Param("category") Category category,
-                                           @Param("horsePower") int horsePower,
-                                           @Param("displacement") int displacement);
-
+    @Query(value = """
+            SELECT m.* FROM motorcycles m 
+            WHERE m.category = CAST(:category AS TEXT) 
+            OR ABS(m.displacement - :displacement) <= (:displacement * 0.3)
+            """, nativeQuery = true)
+    List<Motorcycle> findCandidateSimilarMotorcycles(
+            @Param("category") Category category,
+            @Param("displacement") int displacement
+    );
 }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class MotorcycleService {
@@ -28,13 +29,16 @@ public class MotorcycleService {
   private final MotorcycleRepository repository;
   private final ScoringService scoringService;
   private final StatisticsService statisticsService;
+  private final MotorcycleSimilarityService similarityService;
 
   public MotorcycleService(MotorcycleRepository repository,
                            ScoringService scoringService,
-                           StatisticsService statisticsService) {
+                           StatisticsService statisticsService,
+                           MotorcycleSimilarityService similarityService) {
     this.repository = repository;
     this.scoringService = scoringService;
     this.statisticsService = statisticsService;
+    this.similarityService = similarityService;
   }
 
   public Page<MotorcycleSummaryDTO> getAllMotorcycles(MotorcycleSearchParams params) {
@@ -84,7 +88,20 @@ public class MotorcycleService {
   @Transactional
   public void saveMotorcycle(MotorcycleDetailsDTO motorcycleDTO) {
     Motorcycle moto = MotorcycleMapper.toEntity(motorcycleDTO);
-    moto.setSimilarMotorcycles(repository.findSimilarMotorcycles(moto.getCategory(), moto.getHorsePower(), moto.getDisplacement()));
+
+    // Get candidate motorcycles from repository
+    List<Motorcycle> candidates = repository.findCandidateSimilarMotorcycles(
+        moto.getCategory(),
+        moto.getDisplacement()
+    );
+
+    // Calculate similarity using the service
+      //TODO Create a service that re-calculates all similar motorcycles for all motorcycles.
+      // or at least in batches (like all adventures, all sport, all...) to be up to date.
+      // because similar motorcycles will of course change after a while of putting more and more motorcycles!!!
+    List<Motorcycle> similarMotorcycles = similarityService.findSimilarMotorcycles(candidates, moto, 6);
+    moto.setSimilarMotorcycles(Set.copyOf(similarMotorcycles));
+
     repository.save(moto);
     statisticsService.updateStatistics(moto);
     statisticsService.evictStatisticsCache();
