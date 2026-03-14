@@ -52,7 +52,7 @@ public class MotoSpecs {
     }
 
     public static Specification<Motorcycle> fromQuizAnswers(QuizAnswersDTO answers) {
-        Specification<Motorcycle> spec = Specification.where(null); // start empty
+        Specification<Motorcycle> spec = Specification.unrestricted();
 
         if ( !answers.getUserPreferences().contains(QuizAnswersDTO.UserPreference.NONE) ) {
             // Hard filter 1: Manufacturer region

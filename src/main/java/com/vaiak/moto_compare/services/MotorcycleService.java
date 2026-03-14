@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -53,16 +54,37 @@ public class MotorcycleService {
     Sort sortBy = parseSorting(params.getSort());
 
     Pageable pageable = PageRequest.of(params.getPage(), params.getSize(), sortBy);
-    // Consider switching to manual Queries if that starts taking so long. (refactor with between?)
-    Specification<Motorcycle> spec = Specification.where(
-            (params.getManufacturer() != null && !params.getManufacturer().isEmpty()) ? MotoSpecs.hasManufacturer(params.getManufacturer()) : null)
-            .and((params.getCategory() != null ? MotoSpecs.isCategory(params.getCategory()) : null))
-            .and(params.getHorsePowerMin() != null ? MotoSpecs.hasHorsePowerMin(params.getHorsePowerMin()) : null)
-            .and(params.getHorsePowerMax() != null ? MotoSpecs.hasHorsePowerMax(params.getHorsePowerMax()) : null)
-            .and(params.getDisplacementMin() != null ? MotoSpecs.hasDisplacementMin(params.getDisplacementMin()) : null)
-            .and(params.getDisplacementMax() != null ? MotoSpecs.hasDisplacementMax(params.getDisplacementMax()) : null)
-            .and(params.getYearMin() != null ? MotoSpecs.hasYearMin(params.getYearMin()) : null)
-            .and(params.getYearMax() != null ? MotoSpecs.hasYearMax(params.getYearMax()) : null);
+    List<Specification<Motorcycle>> filters = new ArrayList<>();
+
+    if (params.getManufacturer() != null && !params.getManufacturer().isBlank()) {
+      filters.add(MotoSpecs.hasManufacturer(params.getManufacturer()));
+    }
+    if (params.getCategory() != null) {
+      filters.add(MotoSpecs.isCategory(params.getCategory()));
+    }
+    if (params.getHorsePowerMin() != null) {
+      filters.add(MotoSpecs.hasHorsePowerMin(params.getHorsePowerMin()));
+    }
+    if (params.getHorsePowerMax() != null) {
+      filters.add(MotoSpecs.hasHorsePowerMax(params.getHorsePowerMax()));
+    }
+    if (params.getDisplacementMin() != null) {
+      filters.add(MotoSpecs.hasDisplacementMin(params.getDisplacementMin()));
+    }
+    if (params.getDisplacementMax() != null) {
+      filters.add(MotoSpecs.hasDisplacementMax(params.getDisplacementMax()));
+    }
+    if (params.getYearMin() != null) {
+      filters.add(MotoSpecs.hasYearMin(params.getYearMin()));
+    }
+    if (params.getYearMax() != null) {
+      filters.add(MotoSpecs.hasYearMax(params.getYearMax()));
+    }
+
+    Specification<Motorcycle> spec = filters.isEmpty()
+        ? Specification.unrestricted()
+        : Specification.allOf(filters);
+
     Page<Motorcycle> summaryMotorcycles = repository.findAll(spec, pageable);
 
     return summaryMotorcycles.map(MotorcycleMapper::toSummaryDTO);
