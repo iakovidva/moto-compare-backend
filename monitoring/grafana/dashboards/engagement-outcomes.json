@@ -1,0 +1,118 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "targets": [
+        {
+          "expr": "sum by (result) (rate(app_auth_login_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "login {{result}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (result) (rate(app_auth_register_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "register {{result}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum by (result) (rate(app_auth_refresh_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "refresh {{result}}",
+          "refId": "C"
+        },
+        {
+          "expr": "sum by (result) (rate(app_auth_google_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "google {{result}}",
+          "refId": "D"
+        }
+      ],
+      "title": "Auth Outcomes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "targets": [
+        {
+          "expr": "sum by (request_type, authenticated) (rate(app_user_requests_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "{{request_type}} auth={{authenticated}}",
+          "refId": "A"
+        }
+      ],
+      "title": "User Requests by Type",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum by (action, result) (rate(app_review_actions_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "review {{action}} {{result}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (action, result) (rate(app_favorite_actions_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "favorite {{action}} {{result}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Review and Favorite Activity",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "id": 4,
+      "targets": [
+        {
+          "expr": "sum by (mode) (rate(moto_discovery_requests_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "mode={{mode}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (result) (rate(app_quiz_requests_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "quiz {{result}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Discovery and Quiz Usage",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["moto-compare", "business"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": true, "text": "All", "value": ".*"},
+        "hide": 0,
+        "includeAll": true,
+        "label": "instance",
+        "name": "instance",
+        "query": "label_values(app_auth_login_total{job=\"moto-compare-app\"}, instance)",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-6h", "to": "now"},
+  "timezone": "",
+  "title": "Moto Compare - Engagement Outcomes",
+  "uid": "moto-business-activity",
+  "version": 2,
+  "weekStart": ""
+}

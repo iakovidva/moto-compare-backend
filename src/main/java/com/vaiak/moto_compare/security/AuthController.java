@@ -9,6 +9,7 @@ import com.vaiak.moto_compare.security.models.User;
 import com.vaiak.moto_compare.security.refreshToken.RefreshTokenService;
 import com.vaiak.moto_compare.security.services.GoogleOAuthService;
 import com.vaiak.moto_compare.services.UserService;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,17 +46,20 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final GoogleOAuthService googleOAuthService;
+    private final MeterRegistry meterRegistry;
 
     public AuthController(UserService userService,
                           JwtTokenProvider jwtTokenProvider,
                           RefreshTokenService refreshTokenService,
                           BCryptPasswordEncoder passwordEncoder,
-                          GoogleOAuthService googleOAuthService) {
+                          GoogleOAuthService googleOAuthService,
+                          MeterRegistry meterRegistry) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.refreshTokenService = refreshTokenService;
         this.passwordEncoder = passwordEncoder;
         this.googleOAuthService = googleOAuthService;
+        this.meterRegistry = meterRegistry;
     }
 
     @PostMapping("/login")
@@ -66,19 +70,23 @@ public class AuthController {
 
             // Check if this is a Google user trying to login with email/password
             if (user.getIsGoogleUser() != null && user.getIsGoogleUser()) {
+                meterRegistry.counter("app_auth_login_total", "result", "google_account").increment();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("This account is linked to Google. Please use Google Sign-In.");
             }
 
             if (user == null || user.getPassword() == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                meterRegistry.counter("app_auth_login_total", "result", "failure").increment();
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
             }
 
             String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
             addRefreshTokenCookie(response, refreshToken.getToken());
+            meterRegistry.counter("app_auth_login_total", "result", "success").increment();
             return ResponseEntity.ok(new AuthResponse(accessToken));
         } catch (UserNotFoundException e) {
+            meterRegistry.counter("app_auth_login_total", "result", "failure").increment();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
     }
@@ -96,10 +104,12 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerRequest,
                                       HttpServletResponse response) {
         if (userService.findByEmailOptional(registerRequest.getEmail()).isPresent()) {
-           throw new RuntimeException("Email already exists");
+           meterRegistry.counter("app_auth_register_total", "result", "email_exists").increment();
+            throw new RuntimeException("Email already exists");
         }
         if (userService.findByUserNameOptional(registerRequest.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            meterRegistry.counter("app_auth_register_total", "result", "username_exists").increment();
+             throw new RuntimeException("Username already exists");
         }
 
         User user = new User();
@@ -112,6 +122,7 @@ public class AuthController {
         String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         addRefreshTokenCookie(response, refreshToken.getToken());
+        meterRegistry.counter("app_auth_register_total", "result", "success").increment();
 
         return ResponseEntity.ok(new AuthResponse(accessToken));
     }
@@ -130,15 +141,21 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) {
-        String tokenFromCookie = extractRefreshTokenFromCookie(request);
+        try {
+            String tokenFromCookie = extractRefreshTokenFromCookie(request);
 
-        RefreshToken refreshToken = refreshTokenService.findByToken(tokenFromCookie);
-        refreshTokenService.verifyExpiration(refreshToken);
+            RefreshToken refreshToken = refreshTokenService.findByToken(tokenFromCookie);
+            refreshTokenService.verifyExpiration(refreshToken);
 
-        User user = refreshToken.getUser();
-        String newAccessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
+            User user = refreshToken.getUser();
+            String newAccessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
+            meterRegistry.counter("app_auth_refresh_total", "result", "success").increment();
 
-        return ResponseEntity.ok(new AuthResponse(newAccessToken));
+            return ResponseEntity.ok(new AuthResponse(newAccessToken));
+        } catch (RuntimeException ex) {
+            meterRegistry.counter("app_auth_refresh_total", "result", "failure").increment();
+            throw ex;
+        }
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
@@ -237,10 +254,12 @@ public class AuthController {
             String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), accessTokenDurationMillis);
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
             addRefreshTokenCookie(response, refreshToken.getToken());
+            meterRegistry.counter("app_auth_google_total", "result", "success").increment();
 
             return ResponseEntity.ok(new AuthResponse(accessToken));
 
         } catch (Exception e) {
+            meterRegistry.counter("app_auth_google_total", "result", "failure").increment();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Google authentication failed: " + e.getMessage());
         }

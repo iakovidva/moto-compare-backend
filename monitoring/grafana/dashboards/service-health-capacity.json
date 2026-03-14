@@ -1,0 +1,159 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
+      "id": 1,
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"moto-compare-app\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "rps",
+          "refId": "A"
+        }
+      ],
+      "title": "Application Throughput (RPS)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
+      "id": 2,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"moto-compare-app\",instance=~\"$instance\"}[5m])) by (le))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "title": "Request Latency p95 (s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"moto-compare-app\",instance=~\"$instance\",status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{job=\"moto-compare-app\",instance=~\"$instance\"}[5m])), 0.0001)",
+          "legendFormat": "5xx_ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate (5xx ratio)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+      "id": 4,
+      "targets": [
+        {
+          "expr": "sum(jvm_memory_used_bytes{job=\"moto-compare-app\",instance=~\"$instance\",area=\"heap\"})",
+          "legendFormat": "heap_used_bytes",
+          "refId": "A"
+        }
+      ],
+      "title": "Java Heap Used",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+      "id": 5,
+      "targets": [
+        {
+          "expr": "sum(jvm_memory_used_bytes{job=\"moto-compare-app\",instance=~\"$instance\",area=\"heap\"}) / clamp_min(sum(jvm_memory_max_bytes{job=\"moto-compare-app\",instance=~\"$instance\",area=\"heap\"}), 1)",
+          "legendFormat": "heap_usage_ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Java Heap Usage %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+      "id": 6,
+      "targets": [
+        {
+          "expr": "avg(process_cpu_usage{job=\"moto-compare-app\",instance=~\"$instance\"})",
+          "legendFormat": "cpu_usage",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "id": 7,
+      "targets": [
+        {
+          "expr": "sum(rate(jvm_gc_pause_seconds_count{job=\"moto-compare-app\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "gc_pause_rate",
+          "refId": "A"
+        }
+      ],
+      "title": "GC Pause Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "id": 8,
+      "targets": [
+        {
+          "expr": "sum(hikaricp_connections_active{job=\"moto-compare-app\",instance=~\"$instance\"})",
+          "legendFormat": "active",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(hikaricp_connections_pending{job=\"moto-compare-app\",instance=~\"$instance\"})",
+          "legendFormat": "pending",
+          "refId": "B"
+        }
+      ],
+      "title": "DB Connection Pressure",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "tags": ["moto-compare", "service-health"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": true, "text": "All", "value": ".*"},
+        "hide": 0,
+        "includeAll": true,
+        "label": "instance",
+        "name": "instance",
+        "query": "label_values(up{job=\"moto-compare-app\"}, instance)",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-30m", "to": "now"},
+  "timezone": "",
+  "title": "Moto Compare - Service Health and Capacity",
+  "uid": "moto-service-health",
+  "version": 2,
+  "weekStart": ""
+}
+

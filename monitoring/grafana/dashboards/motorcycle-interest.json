@@ -1,0 +1,124 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "targets": [
+        {
+          "expr": "topk(10, sum by (manufacturer) (rate(moto_interest_manufacturer_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m])))",
+          "legendFormat": "{{manufacturer}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Manufacturers (15m rate)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "targets": [
+        {
+          "expr": "sum by (category) (rate(moto_interest_category_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "{{category}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Category Interest (15m rate)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum by (source) (rate(moto_interest_manufacturer_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "{{source}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Interest Source Mix",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "id": 4,
+      "targets": [
+        {
+          "expr": "sum by (manufacturer, category) (rate(moto_motorcycle_details_views_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
+          "legendFormat": "{{manufacturer}} / {{category}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Detail Views by Manufacturer and Category",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "id": 5,
+      "targets": [
+        {
+          "expr": "topk(10, sum by (manufacturer) (increase(moto_interest_manufacturer_total{job=\"moto-compare-app\",instance=~\"$instance\"}[24h])))",
+          "legendFormat": "{{manufacturer}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Manufacturers (24h increase)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "id": 6,
+      "targets": [
+        {
+          "expr": "sum by (category) (increase(moto_interest_category_total{job=\"moto-compare-app\",instance=~\"$instance\"}[24h])) / clamp_min(sum(increase(moto_interest_category_total{job=\"moto-compare-app\",instance=~\"$instance\"}[24h])), 1)",
+          "legendFormat": "{{category}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Category Share (24h)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["moto-compare", "interest"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": true, "text": "All", "value": ".*"},
+        "hide": 0,
+        "includeAll": true,
+        "label": "instance",
+        "name": "instance",
+        "query": "label_values(moto_interest_manufacturer_total{job=\"moto-compare-app\"}, instance)",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-24h", "to": "now"},
+  "timezone": "",
+  "title": "Moto Compare - Motorcycle Interest",
+  "uid": "moto-interest",
+  "version": 1,
+  "weekStart": ""
+}
+

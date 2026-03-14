@@ -20,14 +20,17 @@ public class CacheConfig {
         CaffeineCache popularCache = new CaffeineCache("popular", Caffeine.newBuilder()
                 .expireAfterWrite(60, TimeUnit.MINUTES)
                 .maximumSize(100)
+                .recordStats()
                 .build());
 
         CaffeineCache categoryStatsCache = new CaffeineCache("categoryStats", Caffeine.newBuilder()
                 .maximumSize(100)
+                .recordStats()
                 .build());
 
         CaffeineCache manufacturerStatsCache = new CaffeineCache("manufacturerStats", Caffeine.newBuilder()
                 .maximumSize(100)
+                .recordStats()
                 .build());
 
         SimpleCacheManager cacheManager = new SimpleCacheManager();

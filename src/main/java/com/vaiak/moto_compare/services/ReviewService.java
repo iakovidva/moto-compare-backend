@@ -8,6 +8,7 @@ import com.vaiak.moto_compare.models.Review;
 import com.vaiak.moto_compare.repositories.MotorcycleRepository;
 import com.vaiak.moto_compare.repositories.ReviewRepository;
 import com.vaiak.moto_compare.security.models.User;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -23,13 +24,16 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final MotorcycleRepository motorcycleRepository;
     private final UserService userService;
+    private final MeterRegistry meterRegistry;
 
     public ReviewService(ReviewRepository reviewRepository,
                          MotorcycleRepository motorcycleRepository,
-                         UserService userService) {
+                         UserService userService,
+                         MeterRegistry meterRegistry) {
         this.reviewRepository = reviewRepository;
         this.motorcycleRepository = motorcycleRepository;
         this.userService = userService;
+        this.meterRegistry = meterRegistry;
     }
 
     @Transactional
@@ -38,6 +42,7 @@ public class ReviewService {
 
         Optional<Review> existingReview = reviewRepository.findByMotorcycleIdAndUserId(motorcycleId, user.getId());
         if (existingReview.isPresent()) {
+            meterRegistry.counter("app_review_actions_total", "action", "create", "result", "failure").increment();
             throw new IllegalArgumentException("One review is allowed per user");
         }
         Review review = ReviewMapper.toEntity(reviewRequestDTO);
@@ -47,6 +52,17 @@ public class ReviewService {
         review.setUser(user);
         review.setCreatedAt(LocalDateTime.now());
         Review savedReview = reviewRepository.save(review);
+        meterRegistry.counter("app_review_actions_total", "action", "create", "result", "success").increment();
+        meterRegistry.counter(
+                "moto_interest_manufacturer_total",
+                "manufacturer", motorcycle.getManufacturer().name(),
+                "source", "review_create"
+        ).increment();
+        meterRegistry.counter(
+                "moto_interest_category_total",
+                "category", motorcycle.getCategory().name(),
+                "source", "review_create"
+        ).increment();
         return ReviewMapper.toResponseDTO(savedReview);
     }
 
@@ -54,20 +70,29 @@ public class ReviewService {
     public ReviewResponseDTO updateReview(Long motorcycleId, ReviewRequestDTO reviewRequestDTO, Authentication auth) {
         User user = userService.findByEmail(auth.getName());
         Review review = reviewRepository.findByMotorcycleIdAndUserId(motorcycleId, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("There is no review for this user and motorcycle"));
+                .orElseThrow(() -> {
+                    meterRegistry.counter("app_review_actions_total", "action", "update", "result", "failure").increment();
+                    return new IllegalArgumentException("There is no review for this user and motorcycle");
+                });
 
         review.setRating(reviewRequestDTO.getRating());
         review.setComment(reviewRequestDTO.getComment());
 
-        return ReviewMapper.toResponseDTO(reviewRepository.save(review));
+        Review updatedReview = reviewRepository.save(review);
+        meterRegistry.counter("app_review_actions_total", "action", "update", "result", "success").increment();
+        return ReviewMapper.toResponseDTO(updatedReview);
     }
 
     @Transactional
     public void deleteReview(Long motorcycleId, Authentication auth) {
         User user = userService.findByEmail(auth.getName());
         Review review = reviewRepository.findByMotorcycleIdAndUserId(motorcycleId, user.getId())
-                .orElseThrow(() -> new RuntimeException("Review not found for this motorcycle and user"));
+                .orElseThrow(() -> {
+                    meterRegistry.counter("app_review_actions_total", "action", "delete", "result", "failure").increment();
+                    return new RuntimeException("Review not found for this motorcycle and user");
+                });
         reviewRepository.delete(review);
+        meterRegistry.counter("app_review_actions_total", "action", "delete", "result", "success").increment();
     }
 
     public List<ReviewResponseDTO> getMotorcycleReviews(Long motorcycleId) {

@@ -17,13 +17,17 @@ import com.vaiak.moto_compare.services.MotorcycleService;
 import java.util.List;
 
 import com.vaiak.moto_compare.services.UserFavoriteService;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(MotorcycleController.class)
@@ -32,8 +36,16 @@ class MotorcycleControllerTest {
 
     @Autowired private MockMvc mockMvc;
 
-    @MockBean private MotorcycleService motorcycleService;
-    @MockBean private UserFavoriteService userFavoriteService;
+    @MockitoBean private MotorcycleService motorcycleService;
+    @MockitoBean private UserFavoriteService userFavoriteService;
+
+    @TestConfiguration
+    static class MeterRegistryConfig {
+        @Bean
+        MeterRegistry meterRegistry() {
+            return new SimpleMeterRegistry();
+        }
+    }
 
     @Test
     void getAllTest() throws Exception {

@@ -7,6 +7,7 @@ import com.vaiak.moto_compare.mappers.SubmitRequestMapper;
 import com.vaiak.moto_compare.models.UserRequest;
 import com.vaiak.moto_compare.repositories.UserRequestRepository;
 import com.vaiak.moto_compare.security.models.User;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
@@ -20,11 +21,14 @@ public class UserRequestService {
 
     private final UserRequestRepository repository;
     private final UserService userService;
+    private final MeterRegistry meterRegistry;
 
     public UserRequestService(UserRequestRepository repository,
-                              UserService userService) {
+                              UserService userService,
+                              MeterRegistry meterRegistry) {
         this.repository = repository;
         this.userService = userService;
+        this.meterRegistry = meterRegistry;
     }
 
     @Transactional
@@ -37,6 +41,7 @@ public class UserRequestService {
         }
 
         UserRequest userRequest = SubmitRequestMapper.toUserRequest(request, user);
+        incrementRequestCounter("new_motorcycle", auth != null);
         return createRequest(userRequest);
     }
 
@@ -49,6 +54,7 @@ public class UserRequestService {
             user = null;
         } //TODO consider using Optional.ofNullable()
         UserRequest userRequest = SubmitRequestMapper.toUserRequest(request, user);
+        incrementRequestCounter("incorrect_value", auth != null);
         return createRequest(userRequest);
     }
 
@@ -61,7 +67,16 @@ public class UserRequestService {
             user = null;
         }
         UserRequest userRequest = SubmitRequestMapper.feedbackToUserRequest(feedback, user);
+        incrementRequestCounter("feedback", auth != null);
         return createRequest(userRequest);
+    }
+
+    private void incrementRequestCounter(String requestType, boolean authenticated) {
+        meterRegistry.counter(
+                "app_user_requests_total",
+                "request_type", requestType,
+                "authenticated", String.valueOf(authenticated)
+        ).increment();
     }
 
     public UserRequest createRequest(UserRequest userRequest) {
