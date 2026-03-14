@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 @Builder
 public class MotorcycleSearchParams {
-    private int page = 0;
-    private int size = 3;
+    private Integer page = 0;
+    private Integer size = 3;
     private Category category;
     private String manufacturer; //TODO consider switching to ENUM
     private Integer horsePowerMin;
