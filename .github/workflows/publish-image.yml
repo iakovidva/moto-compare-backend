@@ -1,9 +1,17 @@
 name: publish-image
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      push_latest:
+        description: "Also publish the latest tag"
+        required: false
+        type: boolean
+        default: true
+      custom_tag:
+        description: "Optional extra tag (example: prod-2026-03-14)"
+        required: false
+        type: string
 
 permissions:
   contents: read
