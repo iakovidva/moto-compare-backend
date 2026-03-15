@@ -3,11 +3,6 @@ name: publish-image
 on:
   workflow_dispatch:
     inputs:
-      push_latest:
-        description: "Also publish the latest tag"
-        required: false
-        type: boolean
-        default: true
       custom_tag:
         description: "Optional extra tag (example: prod-2026-03-14)"
         required: false
@@ -51,8 +46,13 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/moto-compare-backend
           tags: |
-            type=raw,value=latest
+            type=raw,value=${{ inputs.custom_tag }},enable=${{ inputs.custom_tag != '' }}
             type=sha,format=short
+
+      - name: Show resolved tags
+        run: |
+          echo "Resolved tags:"
+          echo "${{ steps.meta.outputs.tags }}"
 
       - name: Build and push
         uses: docker/build-push-action@v6
