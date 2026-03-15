@@ -43,8 +43,13 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests( auth -> auth
-                    .requestMatchers(HttpMethod.GET,"/api/motorcycles/requests").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/api/motorcycles").authenticated()
+                    .requestMatchers("/error").permitAll()
+                    .requestMatchers("/actuator/**").permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/statistics/**").permitAll()
+                    .requestMatchers(HttpMethod.GET,"/api/motorcycles/requests").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/motorcycles").hasRole("ADMIN")
+                    .requestMatchers("/api/user/**").authenticated()
                     .anyRequest().permitAll());
 
     return http.build();
