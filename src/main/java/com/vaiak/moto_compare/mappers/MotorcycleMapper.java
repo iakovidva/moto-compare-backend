@@ -2,13 +2,9 @@ package com.vaiak.moto_compare.mappers;
 
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleDetailsDTO;
 import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
-import com.vaiak.moto_compare.dto.review.ReviewResponseDTO;
 import com.vaiak.moto_compare.models.Motorcycle;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,63 +15,63 @@ public class MotorcycleMapper {
             return null;
         }
 
-        return MotorcycleDetailsDTO.builder()
-                .id(motorcycle.getId())
-                .manufacturer(motorcycle.getManufacturer())
-                .model(motorcycle.getModel())
-                .yearRange(motorcycle.getYearRange())
-                .image(motorcycle.getImage())
-                .category(motorcycle.getCategory())
-                // Engine fields
-                .engineDesign(motorcycle.getEngineDesign())
-                .displacement(motorcycle.getDisplacement())
-                .horsePower(motorcycle.getHorsePower())
-                .torque(motorcycle.getTorque())
-                .bore(motorcycle.getBore())
-                .stroke(motorcycle.getStroke())
-                .compressionRatio(motorcycle.getCompressionRatio())
-                .coolingSystem(motorcycle.getCoolingSystem())
-                .fuelConsumption(motorcycle.getFuelConsumption())
-                .emissions(motorcycle.getEmissions())
-                .fuelSystem(motorcycle.getFuelSystem())
-                .throttleControl(motorcycle.getThrottleControl())
-                .clutch(motorcycle.getClutch())
-                .transmission(motorcycle.getTransmission())
-                // Chassis
-                .weight(motorcycle.getWeight())
-                .tankCapacity(motorcycle.getTankCapacity())
-                .wheelbase(motorcycle.getWheelbase())
-                .groundClearance(motorcycle.getGroundClearance())
-                .frameDesign(motorcycle.getFrameDesign())
-                .frontSuspension(motorcycle.getFrontSuspension())
-                .rearSuspension(motorcycle.getRearSuspension())
-                .frontSuspensionTravel(motorcycle.getFrontSuspensionTravel())
-                .rearSuspensionTravel(motorcycle.getRearSuspensionTravel())
-                .seatHeight(motorcycle.getSeatHeight())
-                // Wheels
-                .wheelsType(motorcycle.getWheelsType())
-                .frontTyre(motorcycle.getFrontTyre())
-                .rearTyre(motorcycle.getRearTyre())
-                .frontWheelSize(motorcycle.getFrontWheelSize())
-                .rearWheelSize(motorcycle.getRearWheelSize())
-                // Brakes
-                .frontBrake(motorcycle.getFrontBrake())
-                .rearBrake(motorcycle.getRearBrake())
-                .frontDiscDiameter(motorcycle.getFrontDiscDiameter())
-                .rearDiscDiameter(motorcycle.getRearDiscDiameter())
-                .abs(motorcycle.isAbs())
-                // Electronics
-                .dashDisplay(motorcycle.getDashDisplay())
-                .ridingModes(motorcycle.getRidingModes())
-                .tractionControl(motorcycle.isTractionControl())
-                .quickShifter(motorcycle.getQuickShifter())
-                .cruiseControl(motorcycle.isCruiseControl())
-                .lighting(motorcycle.getLighting())
-                .similarMotorcycles(getSimilarMotorcycles(motorcycle))
+        MotorcycleDetailsDTO dto = new MotorcycleDetailsDTO();
+        dto.setId(motorcycle.getId());
+        dto.setManufacturer(motorcycle.getManufacturer());
+        dto.setModel(motorcycle.getModel());
+        dto.setYearRange(motorcycle.getYearRange());
+        dto.setImage(motorcycle.getImage());
+        dto.setCategory(motorcycle.getCategory());
+        // Engine fields
+        dto.setEngineDesign(motorcycle.getEngineDesign());
+        dto.setDisplacement(motorcycle.getDisplacement());
+        dto.setHorsePower(motorcycle.getHorsePower());
+        dto.setTorque(motorcycle.getTorque());
+        dto.setBore(motorcycle.getBore());
+        dto.setStroke(motorcycle.getStroke());
+        dto.setCompressionRatio(motorcycle.getCompressionRatio());
+        dto.setCoolingSystem(motorcycle.getCoolingSystem());
+        dto.setFuelConsumption(motorcycle.getFuelConsumption());
+        dto.setEmissions(motorcycle.getEmissions());
+        dto.setFuelSystem(motorcycle.getFuelSystem());
+        dto.setThrottleControl(motorcycle.getThrottleControl());
+        dto.setClutch(motorcycle.getClutch());
+        dto.setTransmission(motorcycle.getTransmission());
+        // Chassis
+        dto.setWeight(motorcycle.getWeight());
+        dto.setTankCapacity(motorcycle.getTankCapacity());
+        dto.setWheelbase(motorcycle.getWheelbase());
+        dto.setGroundClearance(motorcycle.getGroundClearance());
+        dto.setFrameDesign(motorcycle.getFrameDesign());
+        dto.setFrontSuspension(motorcycle.getFrontSuspension());
+        dto.setRearSuspension(motorcycle.getRearSuspension());
+        dto.setFrontSuspensionTravel(motorcycle.getFrontSuspensionTravel());
+        dto.setRearSuspensionTravel(motorcycle.getRearSuspensionTravel());
+        dto.setSeatHeight(motorcycle.getSeatHeight());
+        // Wheels
+        dto.setWheelsType(motorcycle.getWheelsType());
+        dto.setFrontTyre(motorcycle.getFrontTyre());
+        dto.setRearTyre(motorcycle.getRearTyre());
+        dto.setFrontWheelSize(motorcycle.getFrontWheelSize());
+        dto.setRearWheelSize(motorcycle.getRearWheelSize());
+        // Brakes
+        dto.setFrontBrake(motorcycle.getFrontBrake());
+        dto.setRearBrake(motorcycle.getRearBrake());
+        dto.setFrontDiscDiameter(motorcycle.getFrontDiscDiameter());
+        dto.setRearDiscDiameter(motorcycle.getRearDiscDiameter());
+        dto.setAbs(motorcycle.isAbs());
+        // Electronics
+        dto.setDashDisplay(motorcycle.getDashDisplay());
+        dto.setRidingModes(motorcycle.getRidingModes());
+        dto.setTractionControl(motorcycle.isTractionControl());
+        dto.setQuickShifter(motorcycle.getQuickShifter());
+        dto.setCruiseControl(motorcycle.isCruiseControl());
+        dto.setLighting(motorcycle.getLighting());
+        dto.setSimilarMotorcycles(getSimilarMotorcycles(motorcycle));
 //                .reviews(reviews)
 //                .averageRating(roundedRating)
 //                .numberOfReviews(reviews.size())
-                .build();
+        return dto;
     }
 
     private static Set<MotorcycleSummaryDTO> getSimilarMotorcycles(Motorcycle motorcycle) {

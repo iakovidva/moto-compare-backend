@@ -34,22 +34,22 @@ public class MotorcycleTestDataFactory {
     }
 
     public static MotorcycleDetailsDTO createDetailsDTO(Long id, Manufacturer manufacturer, Category category) {
-        return MotorcycleDetailsDTO.builder()
-                .id(id)
-                .manufacturer(manufacturer)
-                .model("A model")
-                .yearRange("2021-2023")
-                .image("image.jpg")
-                .category(category)
-                .engineDesign("Inline-4")
-                .displacement(649)
-                .horsePower(95)
-                .torque(64)
-                .weight(202)
-                .tankCapacity(15)
-                .frontWheelSize(17)
-                .rearWheelSize(17)
-                .build();
+        MotorcycleDetailsDTO dto = new MotorcycleDetailsDTO();
+        dto.setId(id);
+        dto.setManufacturer(manufacturer);
+        dto.setModel("A model");
+        dto.setYearRange("2021-2023");
+        dto.setImage("image.jpg");
+        dto.setCategory(category);
+        dto.setEngineDesign("Inline-4");
+        dto.setDisplacement(649);
+        dto.setHorsePower(95);
+        dto.setTorque(64);
+        dto.setWeight(202);
+        dto.setTankCapacity(15);
+        dto.setFrontWheelSize(17);
+        dto.setRearWheelSize(17);
+        return dto;
     }
 
 }

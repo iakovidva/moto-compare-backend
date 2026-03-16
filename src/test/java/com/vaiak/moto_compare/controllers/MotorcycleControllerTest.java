@@ -3,8 +3,12 @@ package com.vaiak.moto_compare.controllers;
 import static com.vaiak.moto_compare.utils.MotorcycleTestDataFactory.createAdventureDTO;
 import static com.vaiak.moto_compare.utils.MotorcycleTestDataFactory.createDetailsDTO;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,6 +30,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -111,6 +116,64 @@ class MotorcycleControllerTest {
                         jsonPath("code").value("MOTORCYCLE_NOT_FOUND"),
                         jsonPath("message").value("Motorcycles with manufacturer: 1 not found")
                 ).andDo( r -> System.out.println(r.getResponse().getContentAsString()));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminCanCreateMotorcycle() throws Exception {
+        doNothing().when(motorcycleService).saveMotorcycle(any());
+
+        mockMvc.perform(post("/api/motorcycles")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "manufacturer": "HONDA",
+                                  "model": "Test Model",
+                                  "yearRange": "2020-2023",
+                                  "image": "https://images.example.com/moto.jpg",
+                                  "category": "ADVENTURE",
+                                  "engineDesign": "Parallel Twin",
+                                  "displacement": 100,
+                                  "horsePower": 100,
+                                  "torque": 100,
+                                  "weight": 100,
+                                  "tankCapacity": 100,
+                                  "frontWheelSize": 100,
+                                  "rearWheelSize": 100
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.manufacturer").value("HONDA"))
+                .andExpect(jsonPath("$.model").value("Test Model"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void invalidBodyReturnsBadRequest() throws Exception {
+        mockMvc.perform(post("/api/motorcycles")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "manufacturer": "INVALID_BRAND",
+                                  "model": "Test Model",
+                                  "yearRange": "2020-2023",
+                                  "image": "https://images.example.com/moto.jpg",
+                                  "category": "ADVENTURE",
+                                  "engineDesign": "Parallel Twin",
+                                  "displacement": 100,
+                                  "horsePower": 100,
+                                  "torque": 100,
+                                  "weight": 100,
+                                  "tankCapacity": 100,
+                                  "frontWheelSize": 100,
+                                  "rearWheelSize": 100
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_BODY"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("manufacturer")));
     }
 
 

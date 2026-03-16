@@ -1,19 +1,16 @@
 package com.vaiak.moto_compare.dto.motorcycle;
 
-import com.vaiak.moto_compare.dto.review.ReviewResponseDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vaiak.moto_compare.enums.Category;
 import com.vaiak.moto_compare.enums.Manufacturer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
 import java.util.Set;
 
 @Data
-@Builder
 public class MotorcycleDetailsDTO {
 
     private Long id;
@@ -103,5 +100,6 @@ public class MotorcycleDetailsDTO {
     private boolean cruiseControl;
     private String lighting;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Set<MotorcycleSummaryDTO> similarMotorcycles;
 }
