@@ -1,0 +1,36 @@
+### Get all motorcycles (page, size null)
+GET http://localhost:8080/api/motorcycles
+Accept: application/json
+
+### Get all motorcycles (page=0&size=10)
+GET http://localhost:8080/api/motorcycles?page=0&size=60
+Accept: application/json
+
+
+### Get motorcycle details by ID
+GET http://localhost:8080/api/motorcycles/1
+Accept: application/json
+
+### Get motorcycle summary by ID
+GET http://localhost:8080/api/motorcycles/1/summary
+Accept: application/json
+
+### Get motorcycles by manufacturer
+GET http://localhost:8080/api/motorcycles?manufacturer=HONDA
+Accept: application/json
+
+### Get quiz motorcycles result
+POST http://localhost:8080/api/motorcycles/quiz
+Content-Type: application/json
+Accept: application/json
+
+{
+  "experience": "advanced",
+  "useCase": "offroad",
+  "height": "tall",
+  "sizeComfort": "confident",
+  "features": ["abs"],
+  "userPreferences": ["europe"]
+}
+
+

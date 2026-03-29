@@ -129,14 +129,6 @@ public class MotorcycleService {
     statisticsService.evictStatisticsCache();
   }
 
-  public List<Motorcycle> getMotorcyclesByManufacturer(String manufacturer) {
-    List<Motorcycle> byManufacturer = repository.findByManufacturer(manufacturer);
-    if (byManufacturer.isEmpty()) {
-      throw new MotorcycleNotFoundException(manufacturer);
-    }
-    return byManufacturer;
-  }
-
   public MotorcycleDetailsDTO getMotorcycleDetailsById(Long motorcycleId) {
     Motorcycle motorcycle = repository.findById(motorcycleId)
             .orElseThrow(() -> new MotorcycleNotFoundException(motorcycleId));

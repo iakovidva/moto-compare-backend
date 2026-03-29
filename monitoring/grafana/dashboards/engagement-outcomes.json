@@ -78,11 +78,6 @@
       "id": 4,
       "targets": [
         {
-          "expr": "sum by (mode) (rate(moto_discovery_requests_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
-          "legendFormat": "mode={{mode}}",
-          "refId": "A"
-        },
-        {
           "expr": "sum by (result) (rate(app_quiz_requests_total{job=\"moto-compare-app\",instance=~\"$instance\"}[15m]))",
           "legendFormat": "quiz {{result}}",
           "refId": "B"

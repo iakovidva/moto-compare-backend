@@ -17,6 +17,7 @@ import com.vaiak.moto_compare.dto.motorcycle.MotorcycleSummaryDTO;
 import com.vaiak.moto_compare.enums.Category;
 import com.vaiak.moto_compare.enums.Manufacturer;
 import com.vaiak.moto_compare.exceptions.MotorcycleNotFoundException;
+import com.vaiak.moto_compare.services.MeterRegistryService;
 import com.vaiak.moto_compare.services.MotorcycleService;
 import java.util.List;
 
@@ -43,14 +44,7 @@ class MotorcycleControllerTest {
 
     @MockitoBean private MotorcycleService motorcycleService;
     @MockitoBean private UserFavoriteService userFavoriteService;
-
-    @TestConfiguration
-    static class MeterRegistryConfig {
-        @Bean
-        MeterRegistry meterRegistry() {
-            return new SimpleMeterRegistry();
-        }
-    }
+    @MockitoBean private MeterRegistryService meterRegistryService;
 
     @Test
     void getAllTest() throws Exception {

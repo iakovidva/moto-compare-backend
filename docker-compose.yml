@@ -1,23 +1,4 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: moto-compare-app
-    restart: unless-stopped
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/motorcycles_db
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: password
-      JWT_SECRET: local-dev-jwt-secret-change-me-please-32-bytes-min
-      FRONTEND_ORIGIN: http://localhost:3000
-      APP_ENV: local
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-
   postgres:
     image: postgres:15
     container_name: moto-compare-postgres
@@ -41,7 +22,7 @@ services:
     container_name: moto-compare-prometheus
     restart: unless-stopped
     depends_on:
-      - app
+      - postgres
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

@@ -87,6 +87,7 @@ public class MotorcycleMapper {
                 .model(m.getModel())
                 .yearRange(m.getYearRange())
                 .image(m.getImage())
+                .category(m.getCategory())
                 .displacement(m.getDisplacement())
                 .horsePower(m.getHorsePower())
                 .build();
